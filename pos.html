@@ -22,6 +22,7 @@
   --ink-3:rgba(61,11,23,.42);
   --olive:#5F6B36;
   --olive-tint:#EAEDD9;
+  --olive-fill:#5F6B36;
   --warn:#9A5B00;
   --warn-tint:#FBEBCE;
   --danger:#A32020;
@@ -49,6 +50,7 @@
     --ink-3:rgba(244,227,198,.44);
     --olive:#A9BA72;
     --olive-tint:#31391F;
+    --olive-fill:#3E4A22;
     --warn:#E0A44A;
     --warn-tint:#3A2A12;
     --danger:#E2706B;
@@ -63,7 +65,7 @@
   --cream:#2A1119; --cream-hi:#33161F; --surface:#2E1219;
   --line:rgba(247,230,200,.18); --line-soft:rgba(247,230,200,.10);
   --ink:#F4E3C6; --ink-2:rgba(244,227,198,.66); --ink-3:rgba(244,227,198,.44);
-  --olive:#A9BA72; --olive-tint:#31391F; --warn:#E0A44A; --warn-tint:#3A2A12;
+  --olive:#A9BA72; --olive-tint:#31391F; --olive-fill:#3E4A22; --warn:#E0A44A; --warn-tint:#3A2A12;
   --danger:#E2706B; --danger-tint:#401A1C; --good:#8CC79C;
   --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 28px -18px rgba(0,0,0,.9);
   color-scheme:dark;
@@ -150,7 +152,7 @@ main{display:block}
   padding:3px 10px;border-radius:999px;letter-spacing:.02em;
   font-style:italic;text-transform:capitalize;line-height:1.35;
 }
-.pill.vegan{background:var(--olive);color:#FFF6E0;box-shadow:0 0 0 2px var(--surface)}
+.pill.vegan{background:var(--olive-fill);color:#FFF6E0;box-shadow:0 0 0 2px var(--surface)}
 .pill.whey{background:var(--maroon);color:var(--onmaroon);box-shadow:0 0 0 2px var(--surface)}
 
 /* whey / vegan sub-headers, same chips as the printed menu */
@@ -161,14 +163,14 @@ main{display:block}
   padding:5px 20px;border-radius:999px;color:#FFF6E0;
 }
 .chip.whey{background:var(--maroon)}
-.chip.vegan{background:var(--olive)}
+.chip.vegan{background:var(--olive-fill)}
 .subhead .cn{font-size:12.5px;color:var(--ink-3)}
 .minitag{
   display:inline-block;font-style:italic;font-weight:700;font-size:10.5px;
   padding:1px 8px;border-radius:999px;color:#FFF6E0;vertical-align:1px;
 }
 .minitag.whey{background:var(--maroon)}
-.minitag.vegan{background:var(--olive)}
+.minitag.vegan{background:var(--olive-fill)}
 .tile .marg{font-size:11.5px;color:var(--ink-3)}
 .tile .marg.low{color:var(--warn);font-weight:600}
 .tile .cnt{
@@ -576,11 +578,12 @@ input.cell{width:92px;text-align:right;padding:6px 8px;font-size:13.5px}
   <div class="brand"><b>fuelora</b><span>made to fuel an active life</span></div>
   <nav class="navtabs" role="tablist" aria-label="Sections">
     <button role="tab" aria-selected="true" data-view="order">Order</button>
-    <button role="tab" aria-selected="false" data-view="sales">Sales</button>
-    <button role="tab" aria-selected="false" data-view="orders">Orders</button>
+    <button role="tab" aria-selected="false" data-view="orders">Order history</button>
+    <button role="tab" aria-selected="false" data-view="sales">🔒 Sales</button>
     <button role="tab" aria-selected="false" data-view="menu">Menu &amp; costs</button>
   </nav>
   <div class="syncchip" id="sync"><span class="dot" id="syncdot"></span><span id="synctext">Connecting</span></div>
+  <button class="linkbtn" id="themebtn" style="margin-left:8px;white-space:nowrap">Theme: Auto</button>
   <button class="linkbtn" id="exportsnapshot" style="margin-left:8px;white-space:nowrap">Export snapshot</button>
   <button class="linkbtn" id="logoutbtn" hidden style="margin-left:8px;white-space:nowrap">Log out</button>
 </header>
@@ -750,6 +753,25 @@ input.cell{width:92px;text-align:right;padding:6px 8px;font-size:13.5px}
       <p class="lede">Prices come from the printed menu; costs come from your loaded-cost and COGS sheets. Edit either one and every past total stays as it was charged — only new orders use the new numbers.</p>
       <div class="note" id="marginnote"></div>
       <div class="tablewrap"><table id="menutable"></table></div>
+
+      <h3 class="sub3">Add a new menu item</h3>
+      <p class="muted" style="font-size:13px;margin:-4px 0 8px;max-width:60ch">Added items show up on the order screen and in the table above right away, using whichever group you pick. Enter a cost so its margin is tracked correctly.</p>
+      <div class="expform">
+        <div class="field fw"><label for="newitemname">Name</label><input type="text" id="newitemname" maxlength="60" placeholder="e.g. Brown Sugar Latte"></div>
+        <div class="field"><label for="newitemgroup">Group</label>
+          <select id="newitemgroup">
+            <option value="Iced series">Iced series</option>
+            <option value="Specialty blends">Specialty blends</option>
+            <option value="Healthy meals">Healthy meals</option>
+          </select>
+        </div>
+        <div class="field"><label for="newitemtag">Tag (optional)</label><input type="text" id="newitemtag" maxlength="20" placeholder="e.g. Vegan"></div>
+        <div class="field"><label for="newitemprice">Price (₱)</label><input type="number" id="newitemprice" min="0" step="1" placeholder="0" inputmode="decimal"></div>
+        <div class="field"><label for="newitemcogs">Cost (₱)</label><input type="number" id="newitemcogs" min="0" step="0.01" value="0" inputmode="decimal"></div>
+        <button class="btn" id="additembtn">Add item</button>
+      </div>
+      <div id="customlist" style="margin:4px 0 20px"></div>
+
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <button class="linkbtn" id="resetmenu">Reset to sheet values</button>
         <button class="linkbtn" id="wipe">Erase all sales data</button>
@@ -774,6 +796,24 @@ const SUPABASE_URL = "https://zettravcgjwnvzoulgly.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpldHRyYXZjZ2p3bnZ6b3VsZ2x5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyNjE3OTYsImV4cCI6MjEwNTgzNzc5Nn0.PVBCvdLkqv9qqWyAq83xOA1ofPaNhzvMNw8imHBxYPs";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+/* ============ theme (light / dark / auto) ============
+   Purely a per-device display preference — stored in localStorage only,
+   never sent anywhere. */
+const THEME_KEY = "fuelora.theme";
+function applyTheme(mode){
+  if(mode === "light" || mode === "dark") document.documentElement.dataset.theme = mode;
+  else delete document.documentElement.dataset.theme;
+  const label = mode === "light" ? "Theme: Light" : mode === "dark" ? "Theme: Dark" : "Theme: Auto";
+  const btn = document.getElementById("themebtn");
+  if(btn) btn.textContent = label;
+}
+function initTheme(){
+  let mode = "auto";
+  try{ mode = localStorage.getItem(THEME_KEY) || "auto"; }catch(e){}
+  applyTheme(mode);
+}
+initTheme();
+
 /* ============ menu data ============
    price  : printed menu price
    cogs   : Total Cost (ingredients + packaging) from the "Menu Summary" sheet.
@@ -781,7 +821,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             their older estimate; they're left out of the breakeven average.
    kcal, p, c, f : per-serving macros from the menu
 */
-const MENU = [
+const BUILTIN_MENU = [
   // Iced series
   {id:"latte",   g:"Iced series", n:"Café Latte",              price:199, cogs:114.97, kcal:215, p:25.8, c:15,   f:5.7},
   {id:"mocha",   g:"Iced series", n:"Iced Mocha",              price:210, cogs:124.21, kcal:369, p:27.2, c:27.9, f:15.5},
@@ -803,6 +843,14 @@ const MENU = [
   {id:"plainw",  g:"Healthy meals", n:"Plain Vanilla Waffle", price:129, cogs:84.69,  kcal:0, p:0, c:0, f:0, off:true, unpriced:true},
   {id:"banw",    g:"Healthy meals", n:"Banana Choco Waffle",  price:169, cogs:108.99, kcal:0, p:0, c:0, f:0, off:true, unpriced:true, costnote:"syrup range ₱107.49–110.49, midpoint used"}
 ];
+/* MENU = the built-ins plus whatever staff have added under Menu & costs.
+   Everything else in the app (catalog, cart, receipts, the cost table,
+   CSV export) reads MENU, so once this is rebuilt, staff-added items behave
+   exactly like the printed-menu ones everywhere. */
+let MENU = BUILTIN_MENU.slice();
+function rebuildMenu(){
+  MENU = BUILTIN_MENU.concat(settings.customItems || []);
+}
 /* add-ons, ₱20 each. Cost is 0 until you enter it under Menu & costs.
    ADDON_SETS says which add-ons each menu group offers (matches the printed menu). */
 const ADDONS = [
@@ -826,7 +874,7 @@ const DISCOUNTS = {none:0, scpwd:.20, staff:.15, promo10:.10};
 const DISC_LABEL = {none:"", scpwd:"Senior / PWD 20%", staff:"Staff 15%", promo10:"Promo 10%", amount:"Discount"};
 
 /* ============ state ============ */
-let settings = {overrides:{}, enabled:{}, opex:null, sheetRev:""};
+let settings = {overrides:{}, enabled:{}, opex:null, sheetRev:"", customItems:[]};
 let cart = [];
 let payment = "Cash";
 /* methods that need a reference number, with what to ask for */
@@ -838,6 +886,8 @@ const PAY_REF = {
 const refOf = o => String(o.ref||"").trim();
 const shortRef = r => r.length > 20 ? r.slice(0,8)+"…"+r.slice(-6) : r;
 let curView = "order";
+let salesUnlocked = false;   // reset on every load — Sales requires the PIN again each session
+const SALES_PIN = "162504";
 let range = "day";         // "day" | "7" | "30" | "month" | "all"
 let selDate = null;        // "YYYY-MM-DD" when range is "day"
 let days = {};            // "YYYY-MM-DD" -> {orders:[...]}
@@ -906,7 +956,7 @@ function toast(msg){
 
 /* ============ storage (Supabase) ============ */
 function rowToSettings(row){
-  return row ? { overrides: row.overrides||{}, enabled: row.enabled||{}, opex: row.opex||null, sheetRev: row.sheet_rev||"" } : null;
+  return row ? { overrides: row.overrides||{}, enabled: row.enabled||{}, opex: row.opex||null, sheetRev: row.sheet_rev||"", customItems: row.custom_items||[] } : null;
 }
 function rowToDay(row, d){
   return row ? { date:d, orders: row.orders||[], seq: row.seq||0 } : null;
@@ -950,7 +1000,7 @@ const SUPA = {
   async saveSettings(s){
     const { error } = await sb.from("app_settings").upsert({
       id:"main", overrides:s.overrides||{}, enabled:s.enabled||{}, opex:s.opex||null,
-      sheet_rev:s.sheetRev||"", updated_at:new Date().toISOString()
+      sheet_rev:s.sheetRev||"", custom_items:s.customItems||[], updated_at:new Date().toISOString()
     });
     if(error) throw error;
   },
@@ -1022,10 +1072,11 @@ async function initStorage(){
   }
   if(!settings.opex) settings.opex = normalizeOpex(null);
   await applySheetRev();
+  rebuildMenu();
   try{ days[todayKey()] = (await store.day(todayKey())) || {date:todayKey(), orders:[]}; }
   catch(e){ days[todayKey()] = {date:todayKey(), orders:[]}; }
   ready = true;
-  renderCatalog(); renderCart(); renderMenuTable();
+  renderCatalog(); renderCart(); renderMenuTable(); renderCustomList();
 }
 
 /* ============ auth ============ */
@@ -1042,7 +1093,7 @@ async function initAuth(){
     session = s;
     updateAuthUI();
     if(session && !had) initStorage();
-    if(!session){ try{ if(unwatch) unwatch(); }catch(e){} setSync("", "Signed out"); }
+    if(!session){ try{ if(unwatch) unwatch(); }catch(e){} setSync("", "Signed out"); salesUnlocked = false; }
   });
   updateAuthUI();
   if(session) await initStorage();
@@ -1090,6 +1141,13 @@ async function exportSnapshot(){
   finally{ btn.disabled = false; btn.textContent = old; }
 }
 $("#exportsnapshot").onclick = exportSnapshot;
+$("#themebtn").onclick = ()=>{
+  let mode = "auto";
+  try{ mode = localStorage.getItem(THEME_KEY) || "auto"; }catch(e){}
+  mode = mode === "auto" ? "light" : mode === "light" ? "dark" : "auto";
+  try{ localStorage.setItem(THEME_KEY, mode); }catch(e){}
+  applyTheme(mode);
+};
 
 async function importLegacyFile(file){
   const btn = $("#importbtn"); const old = btn.textContent;
@@ -1099,7 +1157,9 @@ async function importLegacyFile(file){
     if(bundle.settings){
       settings = normalizeSettings(bundle.settings);
       await store.saveSettings(settings);
+      rebuildMenu();
       await syncPublicMenu();
+      await syncCustomItemsPublic();
     }
     const dayEntries = Object.entries(bundle.days || {});
     for(const [d, doc] of dayEntries){
@@ -1128,7 +1188,8 @@ function normalizeSettings(s){
     overrides: (s && s.overrides) || {},
     enabled: (s && s.enabled) || {},
     opex: normalizeOpex(s && s.opex),
-    sheetRev: (s && s.sheetRev) || ""
+    sheetRev: (s && s.sheetRev) || "",
+    customItems: (s && s.customItems) || []
   };
 }
 /* costs were refreshed from the Menu Summary sheet: drop any older cost edits
@@ -1145,7 +1206,7 @@ async function applySheetRev(){
   await persistSettings();
 }
 async function persistSettings(){
-  try{ await store.saveSettings(settings); await syncPublicMenu(); }
+  try{ await store.saveSettings(settings); await syncPublicMenu(); await syncCustomItemsPublic(); }
   catch(e){ toast("Couldn't save that change"); }
 }
 
@@ -1168,6 +1229,30 @@ async function syncPublicMenu(){
   if(!rows.length) return;
   try{ await sb.from("public_menu").upsert(rows); }
   catch(e){ /* staff-side save already succeeded; public page may lag briefly */ }
+}
+
+/* staff-added items need their name/group/macros published too (unlike the
+   built-in menu, the public page has no other way to know about them) —
+   cost is deliberately left out of this table. */
+async function syncCustomItemsPublic(){
+  const items = settings.customItems || [];
+  const ids = items.map(i=>i.id);
+  try{
+    const { data: existing } = await sb.from("custom_items_public").select("id");
+    const stale = (existing||[]).map(r=>r.id).filter(id=>!ids.includes(id));
+    if(stale.length) await sb.from("custom_items_public").delete().in("id", stale);
+    if(items.length){
+      const rows = items.map(it=>({
+        id: it.id, g: it.g||"", n: it.n||"", tag: it.tag || null,
+        price: (settings.overrides[it.id] && typeof settings.overrides[it.id].price === "number")
+          ? settings.overrides[it.id].price : (it.price||0),
+        kcal: it.kcal||0, p: it.p||0, c: it.c||0, f: it.f||0,
+        enabled: settings.enabled[it.id] !== undefined ? !!settings.enabled[it.id] : true,
+        updated_at: new Date().toISOString()
+      }));
+      await sb.from("custom_items_public").upsert(rows);
+    }
+  }catch(e){ /* public page may lag briefly */ }
 }
 
 /* ============ catalog ============ */
@@ -2383,14 +2468,16 @@ $("#besec").addEventListener("click", e=>{
 
 /* ============ menu manager ============ */
 function renderMenuTable(){
+  const customIds = new Set((settings.customItems||[]).map(i=>i.id));
   const rows = MENU.concat(ADDONS).map(raw=>{
     const it = eff(raw);
     const m = marginPct(it);
     const cls = m < 15 ? "bad" : m < 30 ? "low" : "";
+    const isCustom = customIds.has(raw.id);
     return `<tr>
       <td>
-        <div style="font-weight:500">${esc(it.n)}${it.tag?` <span class="tag">${esc(it.tag)}</span>`:""}</div>
-        <div class="muted" style="font-size:12.5px">${esc(it.g)}${it.unpriced?" · price not on the printed menu":""}${it.costnote?" · "+esc(it.costnote):""}${it.g==="Add-ons"&&!it.cogs?" · enter your cost per serving":""}</div>
+        <div style="font-weight:500">${esc(it.n)}${it.tag?` <span class="tag">${esc(it.tag)}</span>`:""}${isCustom?` <button class="linkbtn" data-removeitem="${esc(it.id)}" style="margin-left:6px">Remove</button>`:""}</div>
+        <div class="muted" style="font-size:12.5px">${esc(it.g)}${it.unpriced?" · price not on the printed menu":""}${it.costnote?" · "+esc(it.costnote):""}${it.g==="Add-ons"&&!it.cogs?" · enter your cost per serving":""}${isCustom?" · added by staff":""}</div>
       </td>
       <td><input class="cell" type="number" min="0" step="1" data-price="${it.id}" value="${it.price}"></td>
       <td><input class="cell" type="number" min="0" step="0.01" data-cogs="${it.id}" value="${it.cogs.toFixed(2)}"></td>
@@ -2411,6 +2498,16 @@ function renderMenuTable(){
       `. Matcha is the one to look at first — at ₱${eff(MENU.find(m=>m.id==="matcha")).cogs.toFixed(2)} loaded cost it earns less than a café latte does on a lower price.`
     : `Every item on the menu clears a 30% margin at these prices.`;
   if(settings.opex) renderBreakeven();
+  renderCustomList();
+}
+
+/* short summary list under the add-item form, mainly so an empty state is clear */
+function renderCustomList(){
+  const el = $("#customlist"); if(!el) return;
+  const list = settings.customItems || [];
+  el.innerHTML = list.length
+    ? `<p class="muted" style="font-size:12.5px">${list.length} staff-added item${list.length>1?"s":""} — edit price/cost/on-off in the table above, or use Remove next to the name.</p>`
+    : `<p class="muted" style="font-size:12.5px">No staff-added items yet — anything you add here appears in the table above and on the order screen.</p>`;
 }
 
 /* ============ modal ============ */
@@ -2464,6 +2561,7 @@ function askOptions(id){
 
 /* ============ events ============ */
 async function switchView(name){
+  if(name === "sales" && !salesUnlocked){ promptSalesPin(); return; }
   curView = name;
   document.querySelectorAll(".navtabs button").forEach(x=>x.setAttribute("aria-selected", String(x.dataset.view===name)));
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id === "view-"+name));
@@ -2471,6 +2569,36 @@ async function switchView(name){
   if(name === "sales" && !loadedAll){ loadAll().then(()=>{ if(curView === "sales") renderBuffer(); }); }
   if(name === "menu") renderMenuTable();
   window.scrollTo(0,0);
+}
+
+function promptSalesPin(){
+  openModal(`<div class="modal-h"><h3>🔒 Sales</h3><p>Enter the PIN to view sales figures.</p></div>
+    <div class="modal-b">
+      <div class="field"><label for="salespin">PIN</label>
+        <input type="password" inputmode="numeric" autocomplete="off" id="salespin" maxlength="12">
+      </div>
+      <p class="note" id="salespinerr" style="display:none;color:var(--danger)">Incorrect PIN.</p>
+    </div>
+    <div class="modal-f">
+      <button class="btn ghost" id="salespincancel" style="flex:1">Cancel</button>
+      <button class="btn" id="salespingo">Unlock</button>
+    </div>`);
+  const go = ()=>{
+    const v = $("#salespin").value.trim();
+    if(v === SALES_PIN){
+      salesUnlocked = true;
+      closeModal();
+      switchView("sales");
+    }else{
+      $("#salespinerr").style.display = "block";
+      $("#salespin").value = "";
+      $("#salespin").focus();
+    }
+  };
+  $("#salespincancel").onclick = closeModal;
+  $("#salespingo").onclick = go;
+  $("#salespin").addEventListener("keydown", e=>{ if(e.key === "Enter") go(); });
+  setTimeout(()=>$("#salespin").focus(), 30);
 }
 document.querySelectorAll(".navtabs button").forEach(b=>{ b.onclick = ()=>switchView(b.dataset.view); });
 
@@ -2620,10 +2748,45 @@ $("#menutable").addEventListener("change", async e=>{
   renderMenuTable(); renderCatalog();
 });
 
-$("#resetmenu").onclick = ()=>{
-  confirmDialog("Reset prices and costs?", "Every item goes back to the numbers from your menu and cost sheets. Sales already recorded keep the amounts they were charged at.", "Reset", async ()=>{
-    settings = {overrides:{}, enabled:{}, opex:settings.opex, sheetRev:SHEET_REV};
+$("#menutable").addEventListener("click", e=>{
+  const b = e.target.closest("[data-removeitem]");
+  if(!b) return;
+  const id = b.dataset.removeitem;
+  const item = (settings.customItems||[]).find(i=>i.id===id);
+  confirmDialog("Remove this item?", `"${item?item.n:"This item"}" disappears from the till and the public menu. Past orders that included it keep their recorded details.`, "Remove", async ()=>{
+    settings.customItems = (settings.customItems||[]).filter(i=>i.id!==id);
+    delete settings.enabled[id];
+    delete settings.overrides[id];
     await persistSettings();
+    rebuildMenu();
+    renderMenuTable(); renderCatalog();
+    toast("Item removed");
+  });
+});
+
+$("#additembtn").onclick = async ()=>{
+  const n = $("#newitemname").value.trim();
+  const g = $("#newitemgroup").value;
+  const tag = $("#newitemtag").value.trim();
+  const price = parseFloat($("#newitemprice").value);
+  const cogs = parseFloat($("#newitemcogs").value);
+  if(!n){ toast("Enter a name"); $("#newitemname").focus(); return; }
+  if(isNaN(price) || price < 0){ toast("Enter a valid price"); $("#newitemprice").focus(); return; }
+  const id = "custom_" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const item = { id, g, n, tag: tag || undefined, price, cogs: isNaN(cogs)?0:cogs, kcal:0, p:0, c:0, f:0 };
+  settings.customItems = (settings.customItems||[]).concat([item]);
+  await persistSettings();
+  rebuildMenu();
+  renderMenuTable(); renderCatalog();
+  $("#newitemname").value=""; $("#newitemtag").value=""; $("#newitemprice").value=""; $("#newitemcogs").value="0";
+  toast("Item added");
+};
+
+$("#resetmenu").onclick = ()=>{
+  confirmDialog("Reset prices and costs?", "Every item goes back to the numbers from your menu and cost sheets. Sales already recorded keep the amounts they were charged at. Items you've added yourself are kept as they are.", "Reset", async ()=>{
+    settings = {overrides:{}, enabled:{}, opex:settings.opex, sheetRev:SHEET_REV, customItems:settings.customItems||[]};
+    await persistSettings();
+    rebuildMenu();
     renderMenuTable(); renderCatalog(); toast("Back to sheet values");
   });
 };
