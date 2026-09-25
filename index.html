@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>fuelora — Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --maroon:#5A1226; --maroon-deep:#3D0B17; --maroon-soft:#7A2237;
+  --cream:#F7E6C8; --cream-hi:#FFF5E2; --surface:#FFFAF0;
+  --line:rgba(90,18,38,.16); --line-soft:rgba(90,18,38,.09);
+  --ink:#3D0B17; --ink-2:rgba(61,11,23,.62); --ink-3:rgba(61,11,23,.42);
+  --olive-tint:#EAEDD9; --olive:#5F6B36;
+  --radius:14px; --radius-sm:9px;
+  --shadow:0 1px 0 rgba(90,18,38,.06), 0 8px 24px -16px rgba(61,11,23,.45);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --maroon:#7A2237; --maroon-deep:#1B080D; --maroon-soft:#8E3149;
+    --cream:#2A1119; --cream-hi:#33161F; --surface:#2E1219;
+    --line:rgba(247,230,200,.18); --line-soft:rgba(247,230,200,.10);
+    --ink:#F4E3C6; --ink-2:rgba(244,227,198,.66); --ink-3:rgba(244,227,198,.44);
+    --olive-tint:#31391F; --olive:#A9BA72;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 28px -18px rgba(0,0,0,.9);
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Outfit",system-ui,sans-serif; background:var(--cream); color:var(--ink);
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+header{
+  background:var(--maroon); color:var(--cream-hi); padding:28px 20px 22px; text-align:center;
+  padding-top:calc(28px + env(safe-area-inset-top,0px));
+}
+header b{display:block;font-size:26px;font-weight:700;letter-spacing:.01em}
+header span{display:block;font-size:13px;opacity:.8;margin-top:2px}
+main{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+.banner{
+  background:var(--warn-tint,#FBEBCE); color:var(--ink); border:1px solid var(--line);
+  border-radius:var(--radius-sm); padding:10px 14px; font-size:13px; margin-bottom:18px; display:none;
+}
+.group{margin-bottom:28px}
+.group h2{font-size:19px;margin:0 0 2px}
+.group .note{font-size:13px;color:var(--ink-3);margin:0 0 12px}
+.card{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:14px 16px; margin-bottom:10px;
+  display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
+}
+.card .nm{font-weight:600;font-size:15.5px}
+.card .tag{
+  display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.02em;
+  padding:1px 7px; border-radius:99px; margin-left:6px; vertical-align:1px;
+  background:var(--olive-tint); color:var(--olive);
+}
+.card .mac{font-size:12px;color:var(--ink-3);margin-top:3px}
+.card .price{font-weight:700;font-size:15.5px;white-space:nowrap}
+.addons{font-size:12.5px;color:var(--ink-2);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.empty{font-size:13.5px;color:var(--ink-3);padding:20px 0;text-align:center}
+footer{text-align:center;font-size:12px;color:var(--ink-3);padding:20px 0 30px}
+</style>
+</head>
+<body>
+
+<header>
+  <b>fuelora</b>
+  <span>made to fuel an active life</span>
+</header>
+
+<main>
+  <div class="banner" id="banner">Prices below may not reflect the latest changes — showing our standard menu.</div>
+  <div id="menu"></div>
+</main>
+
+<footer>Prices in ₱. Ask staff about current promos and add-ons.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(function(){
+"use strict";
+
+const SUPABASE_URL = "https://zettravcgjwnvzoulgly.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpldHRyYXZjZ2p3bnZ6b3VsZ2x5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyNjE3OTYsImV4cCI6MjEwNTgzNzc5Nn0.PVBCvdLkqv9qqWyAq83xOA1ofPaNhzvMNw8imHBxYPs";
+
+/* Same catalog as the staff till — names, prices, macros. This is fine to be
+   public; it's what's printed on the physical menu already. Costs and OPEX
+   never appear here. */
+const MENU = [
+  {id:"latte",   g:"Iced series", n:"Café Latte",              price:199, kcal:215, p:25.8, c:15,   f:5.7},
+  {id:"mocha",   g:"Iced series", n:"Iced Mocha",              price:210, kcal:369, p:27.2, c:27.9, f:15.5},
+  {id:"caramel", g:"Iced series", n:"Salted Caramel",          price:199, kcal:307, p:26.1, c:34.6, f:7.1},
+  {id:"matcha",  g:"Iced series", n:"Matcha Latte",            price:210, kcal:198, p:26.5, c:13.0, f:4.6},
+  {id:"w_van",   g:"Specialty blends", tag:"Whey",  n:"Vanilla Milk",             price:169, kcal:474, p:31.0, c:72.1, f:8.5},
+  {id:"w_straw", g:"Specialty blends", tag:"Whey",  n:"Strawberry Protein Milk",  price:179, kcal:302, p:25.9, c:34.8, f:6.5},
+  {id:"w_choco", g:"Specialty blends", tag:"Whey",  n:"Choco Butter Hazel Shake", price:189, kcal:509, p:34.5, c:59.6, f:16.5},
+  {id:"v_van",   g:"Specialty blends", tag:"Vegan", n:"Vanilla Milk",             price:169, kcal:321, p:23.0, c:42.2, f:7.3},
+  {id:"v_choco", g:"Specialty blends", tag:"Vegan", n:"Dark Choco Hazelnut Shake",price:169, kcal:321, p:23.0, c:42.2, f:7.3},
+  {id:"tuna",    g:"Healthy meals", n:"Tuna Waffle",        price:179, kcal:461, p:45.5, c:15,   f:5.7},
+  {id:"chicken", g:"Healthy meals", n:"Chicken Waffle",     price:239, kcal:552, p:66.8, c:36,   f:12.6},
+  {id:"blueb",   g:"Healthy meals", n:"Blueberry Waffle",   price:169, kcal:373, p:32.4, c:37,   f:8.6},
+  {id:"chocw",   g:"Healthy meals", n:"Chocolate Waffle",   price:149, kcal:455, p:36.0, c:34.5, f:16.5},
+  {id:"plainw",  g:"Healthy meals", n:"Plain Vanilla Waffle", price:129, off:true},
+  {id:"banw",    g:"Healthy meals", n:"Banana Choco Waffle",  price:169, off:true}
+];
+const ADDONS = [
+  {id:"a_chia",   n:"Chia Seeds", price:20},
+  {id:"a_flax",   n:"Flax Seeds", price:20},
+  {id:"a_oats",   n:"Oats",       price:20},
+  {id:"a_honey",  n:"Honey",      price:20},
+  {id:"a_blue",   n:"Blueberry",  price:20},
+  {id:"a_almond", n:"Almonds",    price:20}
+];
+const ADDON_SETS = {
+  "Specialty blends": ["a_chia","a_flax","a_oats"],
+  "Healthy meals":    ["a_chia","a_flax","a_honey","a_blue","a_almond"]
+};
+const GROUPS = [
+  {name:"Iced series", note:"served over ice"},
+  {name:"Specialty blends", note:"ask for drink or frappé"},
+  {name:"Healthy meals", note:""}
+];
+
+const peso = n => "₱" + Math.round(n).toLocaleString("en-PH");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function render(overrides){
+  const ov = overrides || {};
+  const html = GROUPS.map(g=>{
+    const items = MENU.filter(it=>{
+      if(it.g !== g.name) return false;
+      const o = ov[it.id];
+      const enabled = o && o.enabled !== null && o.enabled !== undefined ? o.enabled : !it.off;
+      return enabled;
+    });
+    if(!items.length) return "";
+    const addonNames = (ADDON_SETS[g.name]||[]).map(id=>ADDONS.find(a=>a.id===id)).filter(Boolean);
+    return `<div class="group">
+      <h2>${esc(g.name)}</h2>
+      ${g.note ? `<p class="note">${esc(g.note)}</p>` : ""}
+      ${items.map(it=>{
+        const o = ov[it.id];
+        const price = o && typeof o.price === "number" ? o.price : it.price;
+        return `<div class="card">
+          <div>
+            <div class="nm">${esc(it.n)}${it.tag?`<span class="tag">${esc(it.tag)}</span>`:""}</div>
+            ${it.kcal?`<div class="mac">${it.kcal} kcal · ${it.p}g protein · ${it.c}g carbs · ${it.f}g fat</div>`:""}
+          </div>
+          <div class="price">${peso(price)}</div>
+        </div>`;
+      }).join("")}
+      ${addonNames.length ? `<div class="addons">Add-ons (+${peso(addonNames[0].price)} each): ${addonNames.map(a=>esc(a.n)).join(", ")}</div>` : ""}
+    </div>`;
+  }).join("");
+  $menu().innerHTML = html || `<p class="empty">Menu unavailable right now — please check with staff.</p>`;
+}
+function $menu(){ return document.getElementById("menu"); }
+
+async function load(){
+  try{
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data, error } = await sb.from("public_menu").select("*");
+    if(error) throw error;
+    const overrides = {};
+    (data||[]).forEach(row=>{ overrides[row.id] = { price: row.price, enabled: row.enabled }; });
+    render(overrides);
+  }catch(e){
+    console.error("menu load failed:", e);
+    document.getElementById("banner").style.display = "block";
+    render({}); // fall back to the standard printed menu rather than showing nothing
+  }
+}
+load();
+})();
+</script>
+</body>
+</html>

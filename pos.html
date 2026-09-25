@@ -1,0 +1,2654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>fuelora POS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --maroon:#5A1226;
+  --maroon-deep:#3D0B17;
+  --maroon-soft:#7A2237;
+  --cream:#F7E6C8;
+  --cream-hi:#FFF5E2;
+  --surface:#FFFAF0;
+  --line:rgba(90,18,38,.16);
+  --line-soft:rgba(90,18,38,.09);
+  --ink:#3D0B17;
+  --ink-2:rgba(61,11,23,.62);
+  --ink-3:rgba(61,11,23,.42);
+  --olive:#5F6B36;
+  --olive-tint:#EAEDD9;
+  --warn:#9A5B00;
+  --warn-tint:#FBEBCE;
+  --danger:#A32020;
+  --danger-tint:#F6DCDA;
+  --good:#3C6B46;
+  --onmaroon:#F7E6C8;
+  --radius:14px;
+  --radius-sm:9px;
+  --shadow:0 1px 0 rgba(90,18,38,.06), 0 8px 24px -16px rgba(61,11,23,.45);
+  --rail-w:372px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --maroon:#7A2237;
+    --maroon-deep:#1B080D;
+    --maroon-soft:#8E3149;
+    --cream:#2A1119;
+    --cream-hi:#33161F;
+    --surface:#2E1219;
+    --line:rgba(247,230,200,.18);
+    --line-soft:rgba(247,230,200,.10);
+    --ink:#F4E3C6;
+    --ink-2:rgba(244,227,198,.66);
+    --ink-3:rgba(244,227,198,.44);
+    --olive:#A9BA72;
+    --olive-tint:#31391F;
+    --warn:#E0A44A;
+    --warn-tint:#3A2A12;
+    --danger:#E2706B;
+    --danger-tint:#401A1C;
+    --good:#8CC79C;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 28px -18px rgba(0,0,0,.9);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --maroon:#7A2237; --maroon-deep:#1B080D; --maroon-soft:#8E3149;
+  --cream:#2A1119; --cream-hi:#33161F; --surface:#2E1219;
+  --line:rgba(247,230,200,.18); --line-soft:rgba(247,230,200,.10);
+  --ink:#F4E3C6; --ink-2:rgba(244,227,198,.66); --ink-3:rgba(244,227,198,.44);
+  --olive:#A9BA72; --olive-tint:#31391F; --warn:#E0A44A; --warn-tint:#3A2A12;
+  --danger:#E2706B; --danger-tint:#401A1C; --good:#8CC79C;
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 28px -18px rgba(0,0,0,.9);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--cream);
+  color:var(--ink);
+  font-family:"Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:15px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;
+}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none;padding:0}
+:focus-visible{outline:2px solid var(--maroon-soft);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- shell ---------- */
+.topbar{
+  background:var(--maroon-deep);
+  color:var(--onmaroon);
+  padding:10px 18px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:40;
+}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand b{font-weight:600;font-size:25px;letter-spacing:-.02em;line-height:1}
+.brand span{font-size:12.5px;opacity:.62;font-style:italic}
+.navtabs{display:flex;gap:4px;background:rgba(0,0,0,.22);padding:3px;border-radius:999px}
+.navtabs button{
+  padding:7px 16px;border-radius:999px;font-size:14px;font-weight:500;
+  color:rgba(247,230,200,.68);transition:background .14s,color .14s;
+}
+.navtabs button[aria-selected="true"]{background:var(--cream);color:var(--maroon-deep);font-weight:600}
+.syncchip{
+  font-size:11.5px;padding:4px 10px;border-radius:999px;
+  border:1px solid rgba(247,230,200,.28);color:rgba(247,230,200,.75);
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:#C9A227}
+.dot.ok{background:#7FB77E}
+.dot.err{background:#D98A8A}
+
+main{display:block}
+.view{display:none}
+.view.active{display:block}
+
+/* ---------- order view ---------- */
+.order-wrap{display:flex;align-items:flex-start;gap:0}
+.catalog{flex:1;min-width:0;padding:18px 18px 120px}
+.catbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.catbar button{
+  padding:8px 15px;border-radius:999px;border:1px solid var(--line);
+  font-size:14px;font-weight:500;color:var(--ink-2);background:var(--surface);
+}
+.catbar button[aria-pressed="true"]{background:var(--maroon);border-color:var(--maroon);color:var(--onmaroon);font-weight:600}
+
+.grouptitle{
+  display:flex;align-items:baseline;gap:10px;
+  margin:26px 0 12px;padding-bottom:7px;border-bottom:1.5px solid var(--line);
+}
+.grouptitle:first-of-type{margin-top:4px}
+.grouptitle h2{margin:0;font-size:21px;font-weight:600;letter-spacing:-.015em}
+.grouptitle em{font-style:normal;font-size:13px;color:var(--ink-3)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:11px}
+.tile{
+  background:var(--surface);border:1px solid var(--line-soft);border-radius:var(--radius);
+  padding:13px 13px 11px;text-align:left;display:flex;flex-direction:column;gap:9px;
+  box-shadow:var(--shadow);position:relative;min-height:128px;
+  transition:border-color .12s, transform .08s;
+}
+.tile:hover{border-color:var(--maroon-soft)}
+.tile:active{transform:scale(.985)}
+.tile .nm{font-weight:600;font-size:15.5px;line-height:1.25;letter-spacing:-.01em}
+.tile .pr{font-size:19px;font-weight:600;margin-top:auto;letter-spacing:-.02em}
+.macros{display:flex;gap:9px;font-size:11.5px;color:var(--ink-3);flex-wrap:wrap}
+.macros b{font-weight:600;color:var(--ink-2)}
+.pill{
+  position:absolute;top:10px;right:10px;font-size:11px;font-weight:700;
+  padding:3px 10px;border-radius:999px;letter-spacing:.02em;
+  font-style:italic;text-transform:capitalize;line-height:1.35;
+}
+.pill.vegan{background:var(--olive);color:#FFF6E0;box-shadow:0 0 0 2px var(--surface)}
+.pill.whey{background:var(--maroon);color:var(--onmaroon);box-shadow:0 0 0 2px var(--surface)}
+
+/* whey / vegan sub-headers, same chips as the printed menu */
+.subhead{display:flex;align-items:center;gap:10px;margin:16px 0 10px}
+.subhead:first-child{margin-top:4px}
+.chip{
+  font-style:italic;font-weight:700;font-size:15px;letter-spacing:.01em;
+  padding:5px 20px;border-radius:999px;color:#FFF6E0;
+}
+.chip.whey{background:var(--maroon)}
+.chip.vegan{background:var(--olive)}
+.subhead .cn{font-size:12.5px;color:var(--ink-3)}
+.minitag{
+  display:inline-block;font-style:italic;font-weight:700;font-size:10.5px;
+  padding:1px 8px;border-radius:999px;color:#FFF6E0;vertical-align:1px;
+}
+.minitag.whey{background:var(--maroon)}
+.minitag.vegan{background:var(--olive)}
+.tile .marg{font-size:11.5px;color:var(--ink-3)}
+.tile .marg.low{color:var(--warn);font-weight:600}
+.tile .cnt{
+  position:absolute;top:-6px;left:-6px;background:var(--maroon);color:var(--onmaroon);
+  min-width:23px;height:23px;border-radius:999px;display:grid;place-items:center;
+  font-size:12.5px;font-weight:700;padding:0 6px;
+}
+
+/* ---------- order rail ---------- */
+.rail{
+  width:var(--rail-w);flex:0 0 var(--rail-w);
+  position:sticky;top:57px;height:calc(100vh - 57px);
+  background:var(--cream-hi);border-left:1px solid var(--line);
+  display:flex;flex-direction:column;
+}
+.railhead{padding:15px 17px 11px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;gap:10px}
+.railhead h2{margin:0;font-size:17px;font-weight:600;letter-spacing:-.01em}
+.railhead .sub{font-size:12.5px;color:var(--ink-3);margin-left:auto}
+.lines{flex:1;overflow-y:auto;padding:8px 13px}
+.empty{padding:46px 20px;text-align:center;color:var(--ink-3);font-size:14px;line-height:1.55}
+.line{display:flex;gap:10px;align-items:flex-start;padding:10px 4px;border-bottom:1px solid var(--line-soft)}
+.line .info{flex:1;min-width:0}
+.line .nm{font-weight:500;font-size:14.5px;line-height:1.3}
+.line .opt{font-size:12px;color:var(--ink-3)}
+.line .ea{font-size:12px;color:var(--ink-3)}
+.qty{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px}
+.qty button{width:26px;height:26px;border-radius:999px;display:grid;place-items:center;font-size:16px;font-weight:600;color:var(--maroon)}
+.qty button:hover{background:var(--line-soft)}
+.qty span{min-width:22px;text-align:center;font-weight:600;font-size:14px}
+.line .amt{width:74px;text-align:right;font-weight:600;font-size:14.5px}
+
+.totals{padding:12px 17px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:7px;background:var(--surface)}
+.trow{display:flex;justify-content:space-between;font-size:13.5px;color:var(--ink-2)}
+.trow b{color:var(--ink);font-weight:600}
+.trow.grand{font-size:15px;color:var(--ink);align-items:baseline;padding-top:6px;border-top:1px solid var(--line-soft);margin-top:2px}
+.trow.grand b{font-size:31px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.trow.profit{font-size:12.5px;color:var(--ink-3)}
+
+.railform{padding:11px 17px 0;display:flex;flex-direction:column;gap:9px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;color:var(--ink-3);font-weight:500}
+select,input[type=text],input[type=number],input[type=date]{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:8px 10px;font-size:14px;width:100%;
+}
+.segs{display:flex;gap:5px;flex-wrap:wrap}
+.segs button{
+  flex:1;min-width:64px;padding:8px 6px;border-radius:var(--radius-sm);border:1px solid var(--line);
+  font-size:13.5px;font-weight:500;color:var(--ink-2);background:var(--surface);
+}
+#pay{display:grid;grid-template-columns:1fr 1fr}
+.segs button[aria-pressed="true"]{background:var(--maroon);border-color:var(--maroon);color:var(--onmaroon);font-weight:600}
+.railfoot{padding:12px 17px calc(14px + env(safe-area-inset-bottom));display:flex;gap:9px;background:var(--surface)}
+.btn{
+  border-radius:var(--radius-sm);padding:13px 16px;font-weight:600;font-size:15px;
+  background:var(--maroon);color:var(--onmaroon);flex:1;text-align:center;
+}
+.btn:disabled{opacity:.42;cursor:not-allowed}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-2);flex:0 0 auto;padding:13px 15px}
+.btn.ghost:hover{border-color:var(--maroon-soft);color:var(--ink)}
+
+/* mobile cart */
+.cartbar{display:none}
+
+/* ---------- sales ---------- */
+.page{padding:20px 18px 60px;max-width:1180px;margin:0 auto}
+.page h1{font-size:25px;font-weight:600;letter-spacing:-.02em;margin:0 0 3px}
+.page .lede{color:var(--ink-3);font-size:14px;margin:0 0 20px;max-width:64ch}
+.rangebar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.rangebar .segs{flex:0 1 auto;min-width:0}
+.rangebar .segs button{min-width:auto;padding:8px 13px;flex:0 0 auto}
+.daypick{display:flex;align-items:center;gap:4px}
+.daypick input[type=date]{width:auto;padding:7px 9px;min-height:38px}
+.daypick input[type=date][data-on="true"]{border-color:var(--maroon);box-shadow:0 0 0 1px var(--maroon)}
+.daypick button{
+  width:36px;height:38px;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:var(--surface);font-size:19px;line-height:1;color:var(--maroon);display:grid;place-items:center;
+}
+:root[data-theme="dark"] .daypick button{color:var(--cream)}
+.daypick button:disabled{opacity:.35;cursor:not-allowed}
+.rangelabel{margin:-6px 0 18px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.rangelabel b{font-size:19px;font-weight:600;letter-spacing:-.015em}
+.rangelabel span{font-size:13.5px;color:var(--ink-3)}
+.ordsum{margin:0 0 10px;font-size:13.5px;color:var(--ink-3)}
+.ordsum b{color:var(--ink);font-weight:600}
+
+/* per-day chart */
+.chartwrap{border:1px solid var(--line-soft);border-radius:var(--radius);background:var(--surface);padding:14px 14px 10px;margin-bottom:12px}
+.charthead{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-3);margin-bottom:12px}
+.charthead b{color:var(--ink);font-weight:600}
+.bars{display:flex;align-items:stretch;gap:4px;height:170px}
+.bars .col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:stretch;border-radius:6px;padding:0 1px}
+.bars .col:hover{background:var(--line-soft)}
+.bars .plot{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px}
+.bars .plot i{display:block;width:100%;max-width:38px;background:var(--maroon);border-radius:4px 4px 0 0;min-height:2px}
+.bars .col.zero .plot i{background:var(--line)}
+.bars .col.today .plot i{background:var(--olive)}
+.bars .col .amt{font-size:10.5px;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.bars .lbl{height:30px;font-size:10.5px;line-height:1.2;color:var(--ink-3);text-align:center;padding-top:4px;white-space:nowrap;overflow:visible}
+.bars .lbl b{display:block;font-weight:600;color:var(--ink-2);font-size:11.5px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--ink-3);margin-top:6px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+/* per-day table */
+#daytable tbody tr{cursor:pointer}
+#daytable tbody tr:hover td{background:var(--cream-hi)}
+#daytable tr.zero td{color:var(--ink-3)}
+#daytable td:first-child b{font-weight:600}
+#daytable td:first-child small{display:block;font-size:12px;color:var(--ink-3)}
+#daytable tr.best td:first-child b::after{content:"Best day";display:inline-block;white-space:nowrap;margin-left:8px;font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--olive-tint);color:var(--olive)}
+
+/* payments & cash count */
+.st{display:inline-block;white-space:nowrap;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--line-soft);color:var(--ink-2)}
+.st.ok{background:var(--olive-tint);color:var(--olive)}
+.st.short{background:var(--danger-tint);color:var(--danger)}
+.st.over{background:var(--warn-tint);color:var(--warn)}
+.st.wait{background:var(--line-soft);color:var(--ink-3);font-weight:500}
+#paytable td:first-child b{font-weight:600}
+#paytable td:first-child small{display:block;font-size:12px;color:var(--ink-3)}
+#paytable input.cntin{width:130px;text-align:right;padding:7px 9px}
+#paytable tbody tr[data-day]{cursor:pointer}
+#paytable tbody tr[data-day]:hover td{background:var(--cream-hi)}
+#paytable tr.zero td{color:var(--ink-3)}
+.payfoot{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:12px 14px;border-top:1px solid var(--line-soft);background:var(--surface)}
+.payfoot .btn{flex:0 0 auto;padding:9px 18px;font-size:14px}
+.payfoot .when{font-size:12.5px;color:var(--ink-3);margin-left:auto}
+.paybanner{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:12px 14px;border-bottom:1px solid var(--line-soft);font-size:13.5px;color:var(--ink-2)}
+.paybanner b.big{font-size:18px;font-weight:600;letter-spacing:-.015em}
+.paybanner.ok b.big{color:var(--good)}
+.paybanner.short b.big{color:var(--danger)}
+.paybanner.over b.big{color:var(--warn)}
+.kpi .v.neg{color:var(--danger)}
+
+/* opex & breakeven band */
+.be{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.5fr);background:var(--maroon);color:var(--onmaroon);border-radius:var(--radius);overflow:hidden;margin-bottom:8px}
+.be > div{padding:16px 18px;min-width:0}
+.be > div + div{box-shadow:-1px 0 0 rgba(247,230,200,.16)}
+.be .k{font-size:12.5px;opacity:.72}
+.be .v{font-size:30px;font-weight:600;letter-spacing:-.03em;line-height:1.15;margin-top:3px;white-space:nowrap}
+.be .v small{font-size:14px;font-weight:500;opacity:.7;letter-spacing:0;margin-left:3px}
+.be .s{font-size:12.5px;opacity:.78;margin-top:4px;line-height:1.4}
+.be .s b{font-weight:600;opacity:1}
+.be .prog{height:8px;background:rgba(247,230,200,.18);border-radius:99px;overflow:hidden;margin:10px 0 2px}
+.be .prog i{display:block;height:100%;background:var(--cream);border-radius:99px;transition:width .3s ease}
+.be .hit .prog i{background:#C9D99A}
+.be .hit .state{color:#DDE8B5}
+.befoot{font-size:13px;color:var(--ink-3);margin:0 0 20px;line-height:1.5;max-width:92ch}
+.befoot b{color:var(--ink-2);font-weight:600}
+@media (max-width:760px){
+  .be{grid-template-columns:1fr 1fr}
+  .be .bp{grid-column:1 / -1;box-shadow:0 -1px 0 rgba(247,230,200,.16)!important}
+  .be .v{font-size:25px}
+}
+@media (prefers-reduced-motion:reduce){.be .prog i{transition:none}}
+/* monthly opex editor */
+.sub3{font-size:14.5px;font-weight:600;margin:16px 0 8px;color:var(--ink-2)}
+.opexgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:12px;align-items:start;margin-bottom:6px}
+.opexgrid .tablewrap{margin-bottom:0}
+@media (max-width:900px){.opexgrid{grid-template-columns:1fr}}
+.opextable td{vertical-align:middle}
+.opextable td small{display:block;font-size:12px;color:var(--ink-3);font-weight:400}
+.opextable tr.grp td{background:var(--cream-hi);font-size:12.5px;color:var(--ink-3);font-weight:500;padding:7px 13px}
+.opextable .u{display:inline-block;width:34px;text-align:left;font-size:12px;color:var(--ink-3);margin-left:5px}
+.opextable input.namein{max-width:230px;padding:6px 8px;font-size:13.5px}
+.opextable tr.hl td{background:var(--maroon);color:var(--onmaroon);font-size:15px}
+.opextable tr.hl td:last-child{font-size:18px;letter-spacing:-.02em}
+.opextable .x{margin-left:8px;font-size:12.5px}
+.opextable input.cell[data-ox="capital"]{width:108px}
+@media (max-width:560px){
+  .opextable th:first-child,.opextable td:first-child{min-width:0}
+  .opextable th,.opextable td{padding:9px 10px}
+  .opextable input.cell{width:74px}
+  .opextable .u{width:26px}
+  .opextable input.namein{min-width:110px}
+}
+.opexfoot{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font-size:12.5px;color:var(--ink-3);margin:8px 0 22px}
+.bufferline{font-size:13.5px;margin:-2px 0 10px;color:var(--ink-2)}
+.bufferline.over{color:var(--danger)}
+.bufferline b{font-weight:600}
+
+/* order history, grouped by date */
+.dayhead{
+  display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:2px 12px;
+  padding:10px 14px;background:var(--cream-hi);border-bottom:1px solid var(--line-soft);font-size:13px;color:var(--ink-3);
+}
+.dayhead b{font-size:14.5px;font-weight:600;color:var(--ink)}
+.dayhead:not(:first-child){border-top:1px solid var(--line)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:0;background:var(--surface);border:1px solid var(--line-soft);border-radius:var(--radius);overflow:hidden;margin-bottom:24px}
+.kpi{background:var(--surface);padding:14px 15px;box-shadow:1px 0 0 var(--line-soft), 0 1px 0 var(--line-soft)}
+.kpi .k{font-size:12.5px;color:var(--ink-3)}
+.kpi .v{font-size:23px;font-weight:600;letter-spacing:-.025em;margin-top:2px}
+.kpi .v.sm{font-size:19px}
+.kpi.accent{background:var(--maroon);color:var(--onmaroon)}
+.kpi.accent .k{color:rgba(247,230,200,.7)}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line-soft);border-radius:var(--radius);background:var(--surface);margin-bottom:26px}
+th,td{padding:10px 13px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line-soft)}
+th:first-child,td:first-child{text-align:left;white-space:normal;min-width:150px}
+thead th{font-size:12.5px;color:var(--ink-3);font-weight:500;background:var(--cream-hi)}
+tbody tr:last-child td{border-bottom:none}
+tfoot td{font-weight:600;background:var(--cream-hi);border-top:1px solid var(--line)}
+.sec{font-size:17px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em}
+.muted{color:var(--ink-3)}
+.neg{color:var(--danger)}
+.pos{color:var(--good)}
+.tag{font-size:11.5px;padding:2px 7px;border-radius:999px;background:var(--line-soft);color:var(--ink-2)}
+.tag.void{background:var(--warn-tint);color:var(--warn)}
+.linkbtn{font-size:13px;color:var(--maroon);text-decoration:underline;text-underline-offset:2px;font-weight:500}
+:root[data-theme="dark"] .linkbtn{color:var(--cream)}
+.orderrow{display:flex;gap:12px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line-soft);font-size:14px}
+.orderrow:last-child{border-bottom:none}
+.orderrow .on{font-weight:600;width:82px}
+.orderrow .who{width:130px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.orderrow .who.none{color:var(--ink-3);font-weight:400}
+.orderrow .ref{color:var(--ink-3);font-size:12px}
+.orderrow .items{flex:1;min-width:0;color:var(--ink-2);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.orderrow .tot{font-weight:600;width:88px;text-align:right}
+.orderrow .acts{display:flex;gap:10px;flex:0 0 auto}
+.linkbtn.danger{color:var(--danger)}
+/* expenses */
+.expform{display:grid;grid-template-columns:auto minmax(160px,1fr) 130px auto;gap:9px;align-items:end;
+  padding:14px;border:1px solid var(--line-soft);border-radius:var(--radius);background:var(--surface);margin-bottom:10px}
+.expform .field input[type=date]{min-height:38px}
+.expform .btn{padding:9px 16px;font-size:14px;flex:0 0 auto}
+.exprow{display:flex;gap:12px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line-soft);font-size:14px}
+.exprow:last-child{border-bottom:none}
+.exprow .ed{width:96px;color:var(--ink-3);font-size:13px;flex:0 0 auto}
+.exprow .ew{flex:1;min-width:0;font-weight:500;overflow-wrap:anywhere}
+.exprow .ea{font-weight:600;white-space:nowrap}
+.exprow .acts{display:flex;gap:12px;flex:0 0 auto}
+.exptotal{display:flex;justify-content:space-between;padding:10px 14px;background:var(--cream-hi);border-top:1px solid var(--line);font-weight:600;font-size:14px}
+@media (max-width:760px){
+  .expform{grid-template-columns:1fr 1fr}
+  .expform .fw{grid-column:1 / -1}
+  .expform .btn{grid-column:1 / -1}
+  .exprow{flex-wrap:wrap;gap:4px 10px}
+  .exprow .ew{flex:1 0 100%;order:-1}
+}
+.orderrow.isvoid .on,.orderrow.isvoid .items,.orderrow.isvoid .tot,.orderrow.isvoid .who{opacity:.55;text-decoration:line-through}
+@media (max-width:760px){
+  .orderrow{flex-wrap:wrap;gap:6px 10px}
+  .orderrow .items{flex:1 0 100%;order:5;white-space:normal}
+  .orderrow .who{width:auto;flex:1 1 80px;min-width:60px}
+  .orderrow .on{width:auto}
+  .orderrow .tm{width:auto!important}
+  .orderrow .tot{width:auto}
+  .orderrow .acts{order:6;margin-left:auto}
+}
+
+/* order detail */
+.det .head{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-2);margin-bottom:12px}
+.det .head b{color:var(--ink);font-weight:600}
+.det .it{padding:9px 0;border-bottom:1px solid var(--line-soft)}
+.det .it:last-of-type{border-bottom:none}
+.det .it .top{display:flex;justify-content:space-between;gap:10px;font-weight:500}
+.det .it .sub{font-size:12.5px;color:var(--ink-3);margin-top:1px}
+.det .mac{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.det .mac span{
+  font-size:11.5px;background:var(--cream-hi);border:1px solid var(--line-soft);
+  border-radius:999px;padding:2px 9px;color:var(--ink-2);
+}
+.det .mac b{font-weight:700;color:var(--ink)}
+.det .style{font-weight:600;color:var(--maroon)}
+:root[data-theme="dark"] .det .style{color:var(--cream)}
+.bignum{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  background:var(--maroon);color:var(--onmaroon);border-radius:var(--radius);padding:12px 15px;margin-top:12px}
+.bignum b{font-size:26px;font-weight:600;letter-spacing:-.02em}
+.bignum .pm{font-size:13px;opacity:.78}
+
+/* ---------- menu manager ---------- */
+input.cell{width:92px;text-align:right;padding:6px 8px;font-size:13.5px}
+.bar{height:6px;border-radius:99px;background:var(--line-soft);overflow:hidden;width:78px;display:inline-block;vertical-align:middle;margin-right:8px}
+.bar i{display:block;height:100%;background:var(--maroon)}
+.bar i.low{background:var(--warn)}
+.bar i.bad{background:var(--danger)}
+.note{background:var(--warn-tint);color:var(--warn);border-radius:var(--radius);padding:12px 15px;font-size:13.5px;line-height:1.5;margin-bottom:20px}
+.note b{font-weight:600}
+
+/* ---------- modal ---------- */
+.scrim{position:fixed;inset:0;background:rgba(27,8,13,.55);display:grid;place-items:center;z-index:60;padding:16px}
+.scrim[hidden]{display:none}
+.modal{background:var(--surface);border-radius:18px;max-width:392px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px -20px rgba(0,0,0,.6)}
+.modal-h{padding:16px 20px 12px;border-bottom:1px solid var(--line-soft)}
+.modal-h h3{margin:0;font-size:18px;font-weight:600}
+.modal-h p{margin:3px 0 0;font-size:13px;color:var(--ink-3)}
+.modal-b{padding:16px 20px}
+.modal-f{padding:0 20px 18px;display:flex;gap:9px}
+.rcpt{font-size:13.5px}
+.rcpt .r{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.rcpt .r.big{font-size:17px;font-weight:600;border-top:1px dashed var(--line);margin-top:8px;padding-top:9px}
+.rcpt hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
+.change{background:var(--maroon);color:var(--onmaroon);border-radius:var(--radius);padding:12px 15px;margin-top:12px;display:flex;justify-content:space-between;align-items:baseline}
+.change b{font-size:25px;font-weight:600;letter-spacing:-.02em}
+.optlist{display:flex;flex-direction:column;gap:8px}
+.optlist button{border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 15px;text-align:left;font-weight:500;background:var(--cream-hi)}
+.optlist button:hover{border-color:var(--maroon-soft)}
+.optlist small{display:block;color:var(--ink-3);font-weight:400;font-size:12.5px}
+.optlist.row{flex-direction:row}
+.optlist.row button{flex:1}
+.optlist button[aria-pressed="true"],.addgrid button[aria-pressed="true"]{border-color:var(--maroon);background:var(--maroon);color:var(--onmaroon)}
+.optlist button[aria-pressed="true"] small,.addgrid button[aria-pressed="true"] .ap{color:inherit;opacity:.8}
+.optsec + .optsec{margin-top:18px}
+.optsec h4{margin:0 0 8px;font-size:13.5px;font-weight:600;color:var(--ink-2);display:flex;justify-content:space-between}
+.optsec h4 span{font-weight:400;color:var(--ink-3)}
+.addgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.addgrid button{border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 12px;background:var(--cream-hi);text-align:left;display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:500;cursor:pointer}
+.addgrid button:hover{border-color:var(--maroon-soft)}
+.addgrid .ap{color:var(--ink-3);font-weight:400;font-size:13px;white-space:nowrap}
+.line .adds{font-size:12.5px;color:var(--ink-2);font-weight:500}
+.rcpt .r.addr,.det .addr{font-size:12.5px;color:var(--ink-2);padding-left:14px}
+.det .addr{display:flex;justify-content:space-between;gap:10px;padding-top:2px}
+
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+  background:var(--maroon-deep);color:var(--onmaroon);padding:11px 18px;border-radius:999px;
+  font-size:14px;z-index:90;box-shadow:0 10px 30px -10px rgba(0,0,0,.6);
+}
+.toast[hidden]{display:none}
+
+/* ---------- responsive ---------- */
+@media (max-width:920px){
+  :root{--rail-w:320px}
+}
+@media (max-width:820px){
+  .rail{
+    position:fixed;inset:auto 0 0 0;width:100%;flex:none;height:auto;max-height:86vh;
+    border-left:none;border-top:1px solid var(--line);border-radius:18px 18px 0 0;
+    transform:translateY(102%);transition:transform .22s ease;z-index:50;
+    box-shadow:0 -12px 40px -16px rgba(0,0,0,.5);
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  .rail.open{transform:translateY(0)}
+  .lines{max-height:30vh}
+  .catalog{padding-bottom:96px}
+  .cartbar{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:45;
+    background:var(--maroon);color:var(--onmaroon);padding:11px 16px calc(11px + env(safe-area-inset-bottom));
+    align-items:center;gap:14px;
+  }
+  .cartbar .c{font-size:13.5px;opacity:.75}
+  .cartbar .t{font-size:21px;font-weight:600;letter-spacing:-.02em;margin-left:auto}
+  .cartbar button{background:var(--cream);color:var(--maroon-deep);padding:9px 17px;border-radius:999px;font-weight:600;font-size:14.5px}
+  .railhead .close{display:block}
+}
+.railhead .close{display:none;margin-left:6px;font-size:20px;color:var(--ink-3);width:30px;height:30px;border-radius:999px}
+@media (max-width:820px){.railhead .close{display:grid;place-items:center}}
+@media (max-width:560px){
+  .brand b{font-size:21px}
+  .brand span{display:none}
+  .navtabs button{padding:7px 12px;font-size:13.5px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+  .topbar{padding:9px 14px;gap:10px}
+  .catalog,.page{padding-left:14px;padding-right:14px}
+}
+
+/* ---------- print ---------- */
+#printarea{display:none}
+@media print{
+  body{background:#fff;color:#000}
+  .topbar,.order-wrap,.page,.cartbar,.scrim,.toast{display:none!important}
+  #printarea{display:block;font-size:12px;width:76mm;margin:0 auto;color:#000}
+  #printarea h3{text-align:center;margin:0 0 2px;font-size:19px;letter-spacing:-.02em}
+  #printarea .tl{text-align:center;font-size:10px;font-style:italic;margin-bottom:9px}
+  #printarea .r{display:flex;justify-content:space-between;gap:10px;padding:1.5px 0}
+  #printarea .r.big{font-weight:700;font-size:14px;border-top:1px dashed #000;margin-top:5px;padding-top:5px}
+  #printarea hr{border:none;border-top:1px dashed #000;margin:6px 0}
+  #printarea .ft{text-align:center;margin-top:10px;font-size:10px}
+  #printarea .cust{border:1px solid #000;padding:4px 6px;margin:6px 0;font-size:12px}
+  #printarea .cust b{font-size:14px}
+  #printarea .opt{font-style:italic}
+  #printarea .addr{padding-left:9px}
+  #printarea .mac{font-size:10px;padding-left:9px;letter-spacing:-.01em}
+  #printarea .lbl{font-weight:700;font-size:11px;margin:7px 0 2px;letter-spacing:.04em}
+  #printarea .pay{border:1px solid #000;padding:4px 6px;margin-top:6px}
+  #printarea .pay .r{padding:1px 0}
+  #printarea .pay .r.big{font-size:15px;border-top:1px solid #000;margin-top:4px;padding-top:4px}
+}
+</style>
+</head>
+<body>
+
+<div class="scrim" id="loginscrim">
+  <div class="modal">
+    <div class="modal-h">
+      <h3>Staff sign in</h3>
+      <p>This is the fuelora staff till. Sign in with the shared staff account.</p>
+    </div>
+    <form id="loginform" class="modal-b" style="display:flex;flex-direction:column;gap:12px">
+      <div class="field">
+        <label for="loginemail">Email</label>
+        <input type="email" id="loginemail" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="loginpass">Password</label>
+        <input type="password" id="loginpass" autocomplete="current-password" required>
+      </div>
+      <p id="loginerr" class="note" hidden style="color:var(--danger)"></p>
+      <button type="submit" class="btn" id="loginbtn" style="width:100%">Sign in</button>
+    </form>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="brand"><b>fuelora</b><span>made to fuel an active life</span></div>
+  <nav class="navtabs" role="tablist" aria-label="Sections">
+    <button role="tab" aria-selected="true" data-view="order">Order</button>
+    <button role="tab" aria-selected="false" data-view="sales">Sales</button>
+    <button role="tab" aria-selected="false" data-view="orders">Orders</button>
+    <button role="tab" aria-selected="false" data-view="menu">Menu &amp; costs</button>
+  </nav>
+  <div class="syncchip" id="sync"><span class="dot" id="syncdot"></span><span id="synctext">Connecting</span></div>
+  <button class="linkbtn" id="exportsnapshot" style="margin-left:8px;white-space:nowrap">Export snapshot</button>
+  <button class="linkbtn" id="logoutbtn" hidden style="margin-left:8px;white-space:nowrap">Log out</button>
+</header>
+
+<main>
+  <!-- ORDER -->
+  <section class="view active" id="view-order">
+    <div class="order-wrap">
+      <div class="catalog">
+        <div class="catbar" id="catbar"></div>
+        <div id="catalog"></div>
+      </div>
+
+      <aside class="rail" id="rail">
+        <div class="railhead">
+          <h2>Current order</h2>
+          <span class="sub" id="railsub"></span>
+          <button class="close" id="railclose" aria-label="Hide order">&times;</button>
+        </div>
+        <div class="lines" id="lines"></div>
+
+        <div class="railform" id="railform">
+          <div class="field">
+            <label for="custname">Customer name</label>
+            <input type="text" id="custname" placeholder="Name for the cup" autocomplete="off" maxlength="60" enterkeyhint="done">
+          </div>
+          <div class="field">
+            <label for="disc">Discount</label>
+            <select id="disc">
+              <option value="none">None</option>
+              <option value="scpwd">Senior / PWD — 20%</option>
+              <option value="staff">Staff — 15%</option>
+              <option value="promo10">Promo — 10%</option>
+              <option value="amount">Peso amount…</option>
+            </select>
+          </div>
+          <div class="field" id="discamtwrap" style="display:none">
+            <label for="discamt">Discount amount (₱)</label>
+            <input type="number" id="discamt" min="0" step="1" value="0" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label>Payment</label>
+            <div class="segs" id="pay">
+              <button data-pay="Cash" aria-pressed="true">Cash</button>
+              <button data-pay="GCash" aria-pressed="false">GCash</button>
+              <button data-pay="MariBank" aria-pressed="false">MariBank</button>
+              <button data-pay="Crypto stables" aria-pressed="false">Crypto stables</button>
+            </div>
+          </div>
+          <div class="field" id="refwrap" style="display:none">
+            <label for="payref" id="payreflabel">Reference no.</label>
+            <input type="text" id="payref" placeholder="" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="120" enterkeyhint="done">
+          </div>
+          <div class="field" id="cashwrap">
+            <label for="tendered">Cash received (₱)</label>
+            <input type="number" id="tendered" min="0" step="1" placeholder="0" inputmode="decimal">
+          </div>
+        </div>
+
+        <div class="totals" id="totals"></div>
+        <div class="railfoot">
+          <button class="btn ghost" id="clearbtn" title="Clear order">Clear</button>
+          <button class="btn" id="chargebtn" disabled>Charge</button>
+        </div>
+      </aside>
+    </div>
+
+    <div class="cartbar" id="cartbar">
+      <span class="c" id="cartcount">0 items</span>
+      <span class="t" id="carttotal">₱0.00</span>
+      <button id="cartopen">Review</button>
+    </div>
+  </section>
+
+  <!-- SALES -->
+  <section class="view" id="view-sales">
+    <div class="page">
+      <h1>Sales</h1>
+      <p class="lede">Totals for the dates you pick. Every charged order is saved with the cost of what went into it, so profit is counted per cup and per plate, not just at the end of the month.</p>
+      <div class="rangebar">
+        <div class="segs rangesegs">
+          <button data-range="today" aria-pressed="true">Today</button>
+          <button data-range="7" aria-pressed="false">Last 7 days</button>
+          <button data-range="30" aria-pressed="false">Last 30 days</button>
+          <button data-range="month" aria-pressed="false">This month</button>
+          <button data-range="all" aria-pressed="false">All time</button>
+        </div>
+        <div class="daypick">
+          <button data-dstep="-1" aria-label="Previous day">‹</button>
+          <input type="date" class="dayinput" aria-label="Show sales for a date">
+          <button data-dstep="1" aria-label="Next day">›</button>
+        </div>
+        <button class="linkbtn" data-refresh>Refresh</button>
+        <button class="linkbtn" data-goto="orders">See these orders</button>
+        <button class="linkbtn" id="exportdays">Download daily totals CSV</button>
+      </div>
+      <div class="rangelabel"></div>
+      <div id="besec"></div>
+      <div class="kpis" id="kpis"></div>
+      <h2 class="sec">Payments &amp; cash count</h2>
+      <p class="muted" id="paylede" style="font-size:13.5px;margin:-4px 0 10px;max-width:64ch"></p>
+      <div class="tablewrap" id="paysec"></div>
+      <h2 class="sec" id="opex">Business expenses</h2>
+      <p class="muted" style="font-size:13.5px;margin:-4px 0 10px;max-width:70ch">Your monthly operating plan, taken from the OPEX &amp; Breakeven sheet. Change any number and the daily OPEX and breakeven at the top of this page update straight away.</p>
+      <div id="opexsec"></div>
+      <h3 class="sub3">Logged expenses</h3>
+      <p class="muted" style="font-size:13.5px;margin:-4px 0 8px;max-width:70ch">Spending on a given day outside the cost of goods: ice, LPG, repairs, a surprise bill. Logged expenses come off gross profit to give net profit, and this month's total is checked against your contingency buffer.</p>
+      <p class="bufferline" id="bufferline"></p>
+      <div class="expform">
+        <div class="field"><label for="expdate">Date</label><input type="date" id="expdate"></div>
+        <div class="field fw"><label for="expwhat">What it was for</label><input type="text" id="expwhat" list="expsuggest" placeholder="e.g. Ice, Staff wages, Rent" autocomplete="off" maxlength="80"></div>
+        <div class="field"><label for="expamt">Amount (₱)</label><input type="number" id="expamt" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+        <button class="btn" id="expadd">Add expense</button>
+        <datalist id="expsuggest">
+          <option value="Ice"><option value="Cups, lids and straws"><option value="Staff wages"><option value="Rent">
+          <option value="Electricity"><option value="Water"><option value="LPG"><option value="Transportation">
+          <option value="Delivery fee"><option value="Cleaning supplies"><option value="Marketing">
+        </datalist>
+      </div>
+      <div class="tablewrap" id="explist"></div>
+      <div id="bydaysec" hidden>
+        <h2 class="sec">By day</h2>
+        <div class="chartwrap" id="daychart"></div>
+        <div class="tablewrap"><table id="daytable"></table></div>
+      </div>
+      <h2 class="sec">By item</h2>
+      <div class="tablewrap"><table id="itemtable"></table></div>
+    </div>
+  </section>
+
+  <!-- ORDER HISTORY -->
+  <section class="view" id="view-orders">
+    <div class="page">
+      <h1>Order history</h1>
+      <p class="lede">Tap any order to see the whole thing: who it was for, whether each blend went out as a drink or a frappé, the macros, how it was paid and what it cost you. Void keeps an order on the record but stops it counting; delete removes it for good.</p>
+      <div class="rangebar">
+        <div class="segs rangesegs">
+          <button data-range="today" aria-pressed="true">Today</button>
+          <button data-range="7" aria-pressed="false">Last 7 days</button>
+          <button data-range="30" aria-pressed="false">Last 30 days</button>
+          <button data-range="month" aria-pressed="false">This month</button>
+          <button data-range="all" aria-pressed="false">All time</button>
+        </div>
+        <div class="daypick">
+          <button data-dstep="-1" aria-label="Previous day">‹</button>
+          <input type="date" class="dayinput" aria-label="Show orders for a date">
+          <button data-dstep="1" aria-label="Next day">›</button>
+        </div>
+        <button class="linkbtn" data-refresh>Refresh</button>
+        <button class="linkbtn" data-goto="sales">See totals</button>
+        <button class="linkbtn" id="exportbtn">Download orders CSV</button>
+      </div>
+      <div class="rangelabel"></div>
+      <div class="field" style="max-width:320px;margin-bottom:12px">
+        <label for="ordersearch">Find an order</label>
+        <input type="text" id="ordersearch" placeholder="Customer, order no., item or reference" autocomplete="off">
+      </div>
+      <p class="ordsum" id="ordsum"></p>
+      <div class="tablewrap" id="orderlist"></div>
+    </div>
+  </section>
+
+  <!-- MENU -->
+  <section class="view" id="view-menu">
+    <div class="page">
+      <h1>Menu &amp; costs</h1>
+      <p class="lede">Prices come from the printed menu; costs come from your loaded-cost and COGS sheets. Edit either one and every past total stays as it was charged — only new orders use the new numbers.</p>
+      <div class="note" id="marginnote"></div>
+      <div class="tablewrap"><table id="menutable"></table></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="linkbtn" id="resetmenu">Reset to sheet values</button>
+        <button class="linkbtn" id="wipe">Erase all sales data</button>
+        <button class="linkbtn" id="importbtn">Import legacy data (one-time)</button>
+        <input type="file" id="importfile" accept="application/json" hidden>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="scrim" id="scrim" hidden><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast" hidden></div>
+<div id="printarea"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ============ Supabase ============ */
+const SUPABASE_URL = "https://zettravcgjwnvzoulgly.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpldHRyYXZjZ2p3bnZ6b3VsZ2x5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyNjE3OTYsImV4cCI6MjEwNTgzNzc5Nn0.PVBCvdLkqv9qqWyAq83xOA1ofPaNhzvMNw8imHBxYPs";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ============ menu data ============
+   price  : printed menu price
+   cogs   : Total Cost (ingredients + packaging) from the "Menu Summary" sheet.
+            Items marked costPending have no recipe on that sheet yet and keep
+            their older estimate; they're left out of the breakeven average.
+   kcal, p, c, f : per-serving macros from the menu
+*/
+const MENU = [
+  // Iced series
+  {id:"latte",   g:"Iced series", n:"Café Latte",              price:199, cogs:114.97, kcal:215, p:25.8, c:15,   f:5.7},
+  {id:"mocha",   g:"Iced series", n:"Iced Mocha",              price:210, cogs:124.21, kcal:369, p:27.2, c:27.9, f:15.5},
+  {id:"caramel", g:"Iced series", n:"Salted Caramel",          price:199, cogs:131.29, kcal:307, p:26.1, c:34.6, f:7.1},
+  {id:"matcha",  g:"Iced series", n:"Matcha Latte",            price:210, cogs:172.93, kcal:198, p:26.5, c:13.0, f:4.6},
+  // Specialty blends — whey
+  {id:"w_van",   g:"Specialty blends", tag:"Whey",  n:"Vanilla Milk",             price:169, cogs:108.85, kcal:474, p:31.0, c:72.1, f:8.5,  style:true},
+  {id:"w_straw", g:"Specialty blends", tag:"Whey",  n:"Strawberry Protein Milk",  price:179, cogs:112.45, kcal:302, p:25.9, c:34.8, f:6.5,  style:true},
+  {id:"w_choco", g:"Specialty blends", tag:"Whey",  n:"Choco Butter Hazel Shake", price:189, cogs:129.08, kcal:509, p:34.5, c:59.6, f:16.5, style:true},
+  // Specialty blends — vegan
+  {id:"v_van",   g:"Specialty blends", tag:"Vegan", n:"Vanilla Milk",             price:169, cogs:104.73, kcal:321, p:23.0, c:42.2, f:7.3,  style:true, costPending:true, costnote:"no recipe on the Menu Summary sheet yet, older estimate kept"},
+  {id:"v_choco", g:"Specialty blends", tag:"Vegan", n:"Dark Choco Hazelnut Shake",price:169, cogs:101.23, kcal:321, p:23.0, c:42.2, f:7.3,  style:true},
+  // Healthy meals
+  {id:"tuna",    g:"Healthy meals", n:"Tuna Waffle",        price:179, cogs:82.95, kcal:461, p:45.5, c:15,   f:5.7},
+  {id:"chicken", g:"Healthy meals", n:"Chicken Waffle",     price:239, cogs:95.21, kcal:552, p:66.8, c:36,   f:12.6},
+  {id:"blueb",   g:"Healthy meals", n:"Blueberry Waffle",   price:169, cogs:72.90, kcal:373, p:32.4, c:37,   f:8.6},
+  {id:"chocw",   g:"Healthy meals", n:"Chocolate Waffle",   price:149, cogs:70.37,  kcal:455, p:36.0, c:34.5, f:16.5},
+  // Costed but not on the printed menu — prices are placeholders until you set them
+  {id:"plainw",  g:"Healthy meals", n:"Plain Vanilla Waffle", price:129, cogs:84.69,  kcal:0, p:0, c:0, f:0, off:true, unpriced:true},
+  {id:"banw",    g:"Healthy meals", n:"Banana Choco Waffle",  price:169, cogs:108.99, kcal:0, p:0, c:0, f:0, off:true, unpriced:true, costnote:"syrup range ₱107.49–110.49, midpoint used"}
+];
+/* add-ons, ₱20 each. Cost is 0 until you enter it under Menu & costs.
+   ADDON_SETS says which add-ons each menu group offers (matches the printed menu). */
+const ADDONS = [
+  {id:"a_chia",   g:"Add-ons", n:"Chia Seeds", price:20, cogs:0},
+  {id:"a_flax",   g:"Add-ons", n:"Flax Seeds", price:20, cogs:0},
+  {id:"a_oats",   g:"Add-ons", n:"Oats",       price:20, cogs:0},
+  {id:"a_honey",  g:"Add-ons", n:"Honey",      price:20, cogs:0},
+  {id:"a_blue",   g:"Add-ons", n:"Blueberry",  price:20, cogs:0},
+  {id:"a_almond", g:"Add-ons", n:"Almonds",    price:20, cogs:0}
+];
+const ADDON_SETS = {
+  "Specialty blends": ["a_chia","a_flax","a_oats"],
+  "Healthy meals":    ["a_chia","a_flax","a_honey","a_blue","a_almond"]
+};
+const GROUPS = [
+  {name:"Iced series", note:"served over ice"},
+  {name:"Specialty blends", note:"ask for drink or frappé"},
+  {name:"Healthy meals", note:""}
+];
+const DISCOUNTS = {none:0, scpwd:.20, staff:.15, promo10:.10};
+const DISC_LABEL = {none:"", scpwd:"Senior / PWD 20%", staff:"Staff 15%", promo10:"Promo 10%", amount:"Discount"};
+
+/* ============ state ============ */
+let settings = {overrides:{}, enabled:{}, opex:null, sheetRev:""};
+let cart = [];
+let payment = "Cash";
+/* methods that need a reference number, with what to ask for */
+const PAY_REF = {
+  "GCash":          {label:"GCash reference no.",           ph:"13-digit ref from the GCash receipt"},
+  "MariBank":       {label:"MariBank reference no.",        ph:"Reference from the transfer confirmation"},
+  "Crypto stables": {label:"Transaction hash or reference", ph:"Tx hash, or exchange transfer ID"}
+};
+const refOf = o => String(o.ref||"").trim();
+const shortRef = r => r.length > 20 ? r.slice(0,8)+"…"+r.slice(-6) : r;
+let curView = "order";
+let range = "day";         // "day" | "7" | "30" | "month" | "all"
+let selDate = null;        // "YYYY-MM-DD" when range is "day"
+let days = {};            // "YYYY-MM-DD" -> {orders:[...]}
+let loadedAll = false;
+let store = null;         // storage adapter
+let ready = false;
+let session = null;       // Supabase auth session
+
+/* ============ helpers ============ */
+const $ = s => document.querySelector(s);
+const peso = n => "₱" + (Math.round(n*100)/100).toLocaleString("en-PH",{minimumFractionDigits:2,maximumFractionDigits:2});
+const pesoShort = n => "₱" + Math.round(n).toLocaleString("en-PH");
+const z2 = n => String(n).padStart(2,"0");
+const keyOf = d => d.getFullYear()+"-"+z2(d.getMonth()+1)+"-"+z2(d.getDate());
+const todayKey = () => keyOf(new Date());
+const dateOf = k => { const p = String(k).split("-").map(Number); return new Date(p[0], p[1]-1, p[2]); };
+const shiftKey = (k,n) => { const d = dateOf(k); d.setDate(d.getDate()+n); return keyOf(d); };
+const fmtLong = k => dateOf(k).toLocaleDateString("en-PH",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+const fmtMed  = k => dateOf(k).toLocaleDateString("en-PH",{month:"short",day:"numeric",year:"numeric"});
+const fmtMD   = k => dateOf(k).toLocaleDateString("en-PH",{month:"short",day:"numeric"});
+const fmtWk   = (k,len) => dateOf(k).toLocaleDateString("en-PH",{weekday:len||"short"});
+const daysAgo = k => Math.round((dateOf(todayKey()) - dateOf(k)) / 864e5);
+const relDay  = k => { const n = daysAgo(k); return n===0 ? "Today" : n===1 ? "Yesterday" : n+" days ago"; };
+const eff = it => {
+  const o = settings.overrides[it.id] || {};
+  return Object.assign({}, it, {
+    price: typeof o.price === "number" ? o.price : it.price,
+    cogs:  typeof o.cogs  === "number" ? o.cogs  : it.cogs
+  });
+};
+const isOn = it => settings.enabled[it.id] !== undefined ? !!settings.enabled[it.id] : !it.off;
+const marginPct = it => it.price > 0 ? (it.price - it.cogs) / it.price * 100 : 0;
+const clone = o => JSON.parse(JSON.stringify(o));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* macros for a saved line — falls back to the menu for older orders */
+function lineMacros(l){
+  const src = (l.kcal || l.p || l.c || l.f) ? l : (MENU.find(i=>i.id===l.id) || {});
+  return {kcal:+src.kcal||0, p:+src.p||0, c:+src.c||0, f:+src.f||0};
+}
+function orderMacros(items){
+  return (items||[]).reduce((a,l)=>{
+    const m = lineMacros(l);
+    a.kcal += m.kcal*l.qty; a.p += m.p*l.qty; a.c += m.c*l.qty; a.f += m.f*l.qty;
+    return a;
+  }, {kcal:0,p:0,c:0,f:0});
+}
+const g1 = n => (Math.round(n*10)/10).toLocaleString("en-PH",{maximumFractionDigits:1});
+const lineTag = l => l.tag || (MENU.find(i=>i.id===l.id)||{}).tag || "";
+const custOf = o => (o.customer||"").trim();
+const addonsFor = it => (ADDON_SETS[it.g]||[]).map(id=>ADDONS.find(a=>a.id===id)).filter(a=>a && isOn(a)).map(eff);
+const lineAdds  = l => Array.isArray(l.adds) ? l.adds : [];
+const addsText  = l => lineAdds(l).map(a=>a.name).join(", ");
+const addsPrice = l => lineAdds(l).reduce((s,a)=>s+(+a.price||0),0);
+const addsCogs  = l => lineAdds(l).reduce((s,a)=>s+(+a.cogs||0),0);
+const basePrice = l => typeof l.base === "number" ? l.base : l.price - addsPrice(l);
+const baseCogs  = l => typeof l.baseCogs === "number" ? l.baseCogs : l.cogs - addsCogs(l);
+/* itemised add-on rows for receipts: one row per add-on, amount × qty */
+const addRows = (l, cls) => lineAdds(l).map(a=>
+  `<div class="${cls}"><span>+ ${esc(a.name)}${l.qty>1?` ×${l.qty}`:""}</span><span>${peso(a.price*l.qty)}</span></div>`).join("");
+
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(()=>{ t.hidden = true; }, 2200);
+}
+
+/* ============ storage (Supabase) ============ */
+function rowToSettings(row){
+  return row ? { overrides: row.overrides||{}, enabled: row.enabled||{}, opex: row.opex||null, sheetRev: row.sheet_rev||"" } : null;
+}
+function rowToDay(row, d){
+  return row ? { date:d, orders: row.orders||[], seq: row.seq||0 } : null;
+}
+
+/* if a charge or edit can't reach Supabase (offline, network hiccup), keep it
+   here so nothing is lost, and retry automatically next time storage inits */
+const PENDING_PREFIX = "fuelora.pending.";
+function queuePendingDay(d, doc){ try{ localStorage.setItem(PENDING_PREFIX+d, JSON.stringify(doc)); }catch(e){} }
+function clearPendingDay(d){ try{ localStorage.removeItem(PENDING_PREFIX+d); }catch(e){} }
+function listPendingDays(){
+  const out = [];
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith(PENDING_PREFIX)) out.push(k.slice(PENDING_PREFIX.length));
+    }
+  }catch(e){}
+  return out;
+}
+async function flushPending(){
+  for(const d of listPendingDays()){
+    try{
+      const doc = JSON.parse(localStorage.getItem(PENDING_PREFIX+d));
+      const { error } = await sb.from("sales_days").upsert({
+        date:d, orders:doc.orders||[], seq:doc.seq||0, updated_at:new Date().toISOString()
+      });
+      if(error) throw error;
+      clearPendingDay(d);
+    }catch(e){ /* still unreachable — leave queued, try again next init */ }
+  }
+}
+
+const SUPA = {
+  kind: "Synced via Supabase",
+  async settings(){
+    const { data, error } = await sb.from("app_settings").select("*").eq("id","main").maybeSingle();
+    if(error) throw error;
+    return rowToSettings(data);
+  },
+  async saveSettings(s){
+    const { error } = await sb.from("app_settings").upsert({
+      id:"main", overrides:s.overrides||{}, enabled:s.enabled||{}, opex:s.opex||null,
+      sheet_rev:s.sheetRev||"", updated_at:new Date().toISOString()
+    });
+    if(error) throw error;
+  },
+  async day(d){
+    const { data, error } = await sb.from("sales_days").select("*").eq("date", d).maybeSingle();
+    if(error) throw error;
+    return rowToDay(data, d);
+  },
+  async saveDay(d, doc){
+    try{
+      const { error } = await sb.from("sales_days").upsert({
+        date:d, orders:doc.orders||[], seq:doc.seq||0, updated_at:new Date().toISOString()
+      });
+      if(error) throw error;
+      clearPendingDay(d);
+    }catch(e){
+      queuePendingDay(d, doc);
+      throw e;
+    }
+  },
+  async allDays(){
+    const { data, error } = await sb.from("sales_days").select("*");
+    if(error) throw error;
+    const out = {};
+    (data||[]).forEach(row=>{ out[row.date] = rowToDay(row, row.date); });
+    return out;
+  },
+  async wipe(){
+    const { error } = await sb.from("sales_days").delete().neq("date","0000-00-00");
+    if(error) throw error;
+  }
+};
+
+/* one realtime channel, so an order rung up on another till shows here too */
+let unwatch = null;
+function watchToday(){
+  const key = todayKey();
+  try{ if(unwatch) unwatch(); }catch(e){}
+  try{
+    const channel = sb.channel("sales-"+key)
+      .on("postgres_changes", { event:"*", schema:"public", table:"sales_days", filter:"date=eq."+key }, payload=>{
+        const row = payload.new;
+        if(!row) return;
+        days[key] = rowToDay(row, key);
+        if(curView === "sales" || curView === "orders") renderAll();
+      })
+      .subscribe();
+    unwatch = ()=>{ try{ sb.removeChannel(channel); }catch(e){} };
+  }catch(e){ unwatch = null; }
+}
+
+function setSync(state, text){
+  $("#syncdot").className = "dot" + (state ? " "+state : "");
+  $("#synctext").textContent = text;
+}
+
+async function initStorage(){
+  store = SUPA;
+  setSync("", "Connecting");
+  try{
+    const s = await store.settings();
+    if(s) settings = normalizeSettings(s);
+    setSync("ok", "Synced — on every device");
+    watchToday();
+    await flushPending();
+  }catch(e){
+    setSync("err", "Couldn't reach the database");
+    toast("Menu and sales data unavailable — check your connection");
+  }
+  if(!settings.opex) settings.opex = normalizeOpex(null);
+  await applySheetRev();
+  try{ days[todayKey()] = (await store.day(todayKey())) || {date:todayKey(), orders:[]}; }
+  catch(e){ days[todayKey()] = {date:todayKey(), orders:[]}; }
+  ready = true;
+  renderCatalog(); renderCart(); renderMenuTable();
+}
+
+/* ============ auth ============ */
+function updateAuthUI(){
+  $("#loginscrim").hidden = !!session;
+  $("#logoutbtn").hidden = !session;
+}
+
+async function initAuth(){
+  const { data } = await sb.auth.getSession();
+  session = data.session;
+  sb.auth.onAuthStateChange((_event, s)=>{
+    const had = !!session;
+    session = s;
+    updateAuthUI();
+    if(session && !had) initStorage();
+    if(!session){ try{ if(unwatch) unwatch(); }catch(e){} setSync("", "Signed out"); }
+  });
+  updateAuthUI();
+  if(session) await initStorage();
+}
+
+$("#loginform").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const email = $("#loginemail").value.trim();
+  const pass = $("#loginpass").value;
+  $("#loginerr").hidden = true;
+  $("#loginbtn").disabled = true; $("#loginbtn").textContent = "Signing in…";
+  try{
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if(error) throw error;
+    $("#loginpass").value = "";
+  }catch(err){
+    $("#loginerr").textContent = "Couldn't sign in — check the email and password.";
+    $("#loginerr").hidden = false;
+  }finally{
+    $("#loginbtn").disabled = false; $("#loginbtn").textContent = "Sign in";
+  }
+});
+$("#logoutbtn").onclick = async ()=>{ try{ await sb.auth.signOut(); }catch(e){} };
+
+/* ============ one-off JSON export / import ============ */
+function downloadText(filename, text, mime){
+  const blob = new Blob([text], {type: mime || "application/octet-stream"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+
+async function exportSnapshot(){
+  const btn = $("#exportsnapshot"); const old = btn.textContent;
+  btn.disabled = true; btn.textContent = "Exporting…";
+  try{
+    const s = await store.settings();
+    const d = await store.allDays();
+    const bundle = { exportedAt:new Date().toISOString(), source:"supabase", settings:s, days:d };
+    downloadText("fuelora-snapshot-"+todayKey()+".json", JSON.stringify(bundle,null,2), "application/json");
+    toast("Exported — check your Downloads folder");
+  }catch(e){ toast("Export failed"); console.error(e); }
+  finally{ btn.disabled = false; btn.textContent = old; }
+}
+$("#exportsnapshot").onclick = exportSnapshot;
+
+async function importLegacyFile(file){
+  const btn = $("#importbtn"); const old = btn.textContent;
+  btn.disabled = true; btn.textContent = "Importing…";
+  try{
+    const bundle = JSON.parse(await file.text());
+    if(bundle.settings){
+      settings = normalizeSettings(bundle.settings);
+      await store.saveSettings(settings);
+      await syncPublicMenu();
+    }
+    const dayEntries = Object.entries(bundle.days || {});
+    for(const [d, doc] of dayEntries){
+      await store.saveDay(d, { date:d, orders:doc.orders||[], seq:doc.seq||0 });
+    }
+    days[todayKey()] = (await store.day(todayKey())) || {date:todayKey(), orders:[]};
+    loadedAll = false;
+    renderAll(); renderMenuTable(); renderCatalog();
+    toast("Imported " + dayEntries.length + " day(s) of history");
+  }catch(e){
+    console.error(e);
+    toast("Import failed — check the file and try again");
+  }finally{
+    btn.disabled = false; btn.textContent = old;
+  }
+}
+$("#importbtn").onclick = ()=> $("#importfile").click();
+$("#importfile").addEventListener("change", e=>{
+  const f = e.target.files[0];
+  if(f) importLegacyFile(f);
+  e.target.value = "";
+});
+
+function normalizeSettings(s){
+  return {
+    overrides: (s && s.overrides) || {},
+    enabled: (s && s.enabled) || {},
+    opex: normalizeOpex(s && s.opex),
+    sheetRev: (s && s.sheetRev) || ""
+  };
+}
+/* costs were refreshed from the Menu Summary sheet: drop any older cost edits
+   for those items once, so the new sheet numbers take effect. Price edits stay. */
+const SHEET_REV = "menu-summary-2026-09";
+const SHEET_IDS = ["latte","mocha","caramel","matcha","w_van","w_straw","w_choco","v_choco","tuna","chicken","blueb","chocw"];
+async function applySheetRev(){
+  if(settings.sheetRev === SHEET_REV) return;
+  SHEET_IDS.forEach(id=>{
+    const o = settings.overrides[id];
+    if(o && "cogs" in o){ delete o.cogs; if(!Object.keys(o).length) delete settings.overrides[id]; }
+  });
+  settings.sheetRev = SHEET_REV;
+  await persistSettings();
+}
+async function persistSettings(){
+  try{ await store.saveSettings(settings); await syncPublicMenu(); }
+  catch(e){ toast("Couldn't save that change"); }
+}
+
+/* push only price + on/off state to public_menu (never cost/OPEX data),
+   so the public menu page reflects staff edits without exposing margins */
+async function syncPublicMenu(){
+  const rows = [];
+  MENU.concat(ADDONS).forEach(it=>{
+    const ov = settings.overrides[it.id];
+    const en = settings.enabled[it.id];
+    if((ov && typeof ov.price === "number") || en !== undefined){
+      rows.push({
+        id: it.id,
+        price: (ov && typeof ov.price === "number") ? ov.price : null,
+        enabled: en !== undefined ? !!en : null,
+        updated_at: new Date().toISOString()
+      });
+    }
+  });
+  if(!rows.length) return;
+  try{ await sb.from("public_menu").upsert(rows); }
+  catch(e){ /* staff-side save already succeeded; public page may lag briefly */ }
+}
+
+/* ============ catalog ============ */
+let activeCat = "All";
+
+function renderCatBar(){
+  const cats = ["All"].concat(GROUPS.map(g=>g.name));
+  $("#catbar").innerHTML = cats.map(c =>
+    `<button data-cat="${esc(c)}" aria-pressed="${c===activeCat}">${esc(c)}</button>`).join("");
+}
+
+function tileHTML(raw){
+  const it = eff(raw);
+  const qty = cart.filter(l=>l.id===it.id).reduce((a,b)=>a+b.qty,0);
+  const m = marginPct(it);
+  return `<button class="tile" data-add="${it.id}">
+    ${qty?`<span class="cnt">${qty}</span>`:""}
+    ${it.tag?`<span class="pill ${it.tag.toLowerCase()}">${esc(it.tag)}</span>`:""}
+    <span class="nm">${esc(it.n)}</span>
+    ${it.kcal?`<span class="macros"><span><b>${it.p}</b>g protein</span><span>${it.kcal} kcal</span></span>`:`<span class="macros">macros not set</span>`}
+    <span class="pr">${pesoShort(it.price)}</span>
+    <span class="marg${m<25?" low":""}">${m.toFixed(0)}% margin · ${peso(it.price-it.cogs)} per unit</span>
+  </button>`;
+}
+
+function renderCatalog(){
+  const wrap = $("#catalog");
+  let html = "";
+  GROUPS.forEach(g => {
+    if(activeCat !== "All" && activeCat !== g.name) return;
+    const items = MENU.filter(i => i.g === g.name && isOn(i));
+    if(!items.length) return;
+    html += `<div class="grouptitle"><h2>${esc(g.name)}</h2>${g.note?`<em>${esc(g.note)}</em>`:""}</div>`;
+
+    const tags = [];
+    items.forEach(i => { if(i.tag && !tags.includes(i.tag)) tags.push(i.tag); });
+    if(tags.length){
+      tags.forEach(tag => {
+        const sub = items.filter(i => i.tag === tag);
+        html += `<div class="subhead"><span class="chip ${tag.toLowerCase()}">${esc(tag)}</span>
+          <span class="cn">${sub.length} blend${sub.length>1?"s":""}</span></div>
+          <div class="grid">${sub.map(tileHTML).join("")}</div>`;
+      });
+      const rest = items.filter(i => !i.tag);
+      if(rest.length) html += `<div class="grid" style="margin-top:12px">${rest.map(tileHTML).join("")}</div>`;
+    }else{
+      html += `<div class="grid">${items.map(tileHTML).join("")}</div>`;
+    }
+  });
+  wrap.innerHTML = html || `<p class="empty">Nothing on the menu for this filter. Turn items back on under Menu &amp; costs.</p>`;
+}
+
+/* ============ cart ============ */
+function addToCart(id, opt, addIds){
+  const raw = MENU.find(i=>i.id===id); if(!raw) return;
+  const it = eff(raw);
+  const adds = (addIds||[]).map(aid=>ADDONS.find(a=>a.id===aid)).filter(Boolean).map(eff)
+    .map(a=>({id:a.id, name:a.n, price:a.price, cogs:a.cogs}));
+  const key = id + "|" + (opt||"") + "|" + adds.map(a=>a.id).sort().join("+");
+  const line = cart.find(l=>l.key===key);
+  if(line) line.qty++;
+  else cart.push({
+    key, id, name:it.n, tag:it.tag||"", opt:opt||"", adds,
+    base:it.price, baseCogs:it.cogs,
+    price:it.price + adds.reduce((s,a)=>s+a.price,0),
+    cogs:it.cogs + adds.reduce((s,a)=>s+a.cogs,0), qty:1,
+    kcal:it.kcal||0, p:it.p||0, c:it.c||0, f:it.f||0
+  });
+  renderCart(); renderCatalog();
+}
+function setQty(key, d){
+  const i = cart.findIndex(l=>l.key===key); if(i<0) return;
+  cart[i].qty += d;
+  if(cart[i].qty <= 0) cart.splice(i,1);
+  renderCart(); renderCatalog();
+}
+
+function computeTotals(){
+  const gross = cart.reduce((a,l)=>a+l.price*l.qty,0);
+  const cogs  = cart.reduce((a,l)=>a+l.cogs*l.qty,0);
+  const kind  = $("#disc").value;
+  let disc = 0;
+  if(kind === "amount") disc = Math.max(0, parseFloat($("#discamt").value)||0);
+  else disc = gross * (DISCOUNTS[kind]||0);
+  disc = Math.min(disc, gross);
+  const net = gross - disc;
+  const tendered = parseFloat($("#tendered").value)||0;
+  return {gross, cogs, disc, kind, net, profit:net-cogs, tendered, change:tendered-net};
+}
+
+function renderCart(){
+  const t = computeTotals();
+  const n = cart.reduce((a,l)=>a+l.qty,0);
+  $("#railsub").textContent = n ? n + (n===1?" item":" items") : "";
+  $("#cartcount").textContent = n + (n===1?" item":" items");
+  $("#carttotal").textContent = peso(t.net);
+
+  $("#lines").innerHTML = cart.length ? cart.map(l=>`
+    <div class="line">
+      <div class="qty">
+        <button data-q="-1" data-key="${esc(l.key)}" aria-label="One less ${esc(l.name)}">−</button>
+        <span>${l.qty}</span>
+        <button data-q="1" data-key="${esc(l.key)}" aria-label="One more ${esc(l.name)}">+</button>
+      </div>
+      <div class="info">
+        <div class="nm">${esc(l.name)} ${l.tag?`<span class="minitag ${l.tag.toLowerCase()}">${esc(l.tag)}</span>`:""}</div>
+        ${l.opt?`<div class="opt">${esc(l.opt)}</div>`:""}
+        ${lineAdds(l).length?`<div class="adds">+ ${esc(addsText(l))} <span class="ea">(${pesoShort(addsPrice(l))})</span></div>`:""}
+        <div class="ea">${peso(l.price)} each</div>
+      </div>
+      <div class="amt">${peso(l.price*l.qty)}</div>
+    </div>`).join("")
+    : `<p class="empty">Tap a drink or a waffle to start the order.</p>`;
+
+  let rows = `<div class="trow"><span>Subtotal</span><span>${peso(t.gross)}</span></div>`;
+  if(t.disc>0) rows += `<div class="trow"><span>${esc(DISC_LABEL[t.kind]||"Discount")}</span><span class="neg">−${peso(t.disc)}</span></div>`;
+  rows += `<div class="trow grand"><span>Total due</span><b>${peso(t.net)}</b></div>`;
+  if(cart.length) rows += `<div class="trow profit"><span>Cost ${peso(t.cogs)}</span><span>Profit ${peso(t.profit)} · ${t.net>0?(t.profit/t.net*100).toFixed(0):0}%</span></div>`;
+  if(payment==="Cash" && t.tendered>0) rows += `<div class="trow"><span>Change</span><b class="${t.change<0?"neg":""}">${peso(t.change)}</b></div>`;
+  $("#totals").innerHTML = rows;
+
+  const short = payment==="Cash" && t.tendered>0 && t.change<0;
+  $("#chargebtn").disabled = !cart.length || !ready || short;
+  $("#chargebtn").textContent = cart.length ? "Charge " + peso(t.net) : "Charge";
+  $("#cashwrap").style.display = payment==="Cash" ? "" : "none";
+  const pr = PAY_REF[payment];
+  $("#refwrap").style.display = pr ? "" : "none";
+  if(pr){ $("#payreflabel").textContent = pr.label; $("#payref").placeholder = pr.ph; }
+}
+
+/* ============ checkout ============ */
+async function charge(){
+  if(!cart.length || !ready) return;
+  const t = computeTotals();
+  const key = todayKey();
+  let day = days[key];
+  try{ day = (await store.day(key)) || {date:key, orders:[]}; }catch(e){ day = day || {date:key, orders:[]}; }
+  // count up from the highest number the day has ever used, so deleting
+  // an order never hands its number to a later one
+  const used = day.orders.map(o=>parseInt(String(o.no).split("-").pop(),10)||0);
+  const seq = Math.max(day.seq||0, ...used, 0) + 1;
+  day.seq = seq;
+  const now = new Date();
+  const order = {
+    no: key.slice(5).replace("-","") + "-" + String(seq).padStart(3,"0"),
+    ts: now.toISOString(),
+    customer: ($("#custname").value||"").trim(),
+    items: cart.map(l=>({
+      id:l.id, name:l.name, tag:l.tag||"", opt:l.opt, qty:l.qty, price:l.price, cogs:l.cogs,
+      base:l.base, baseCogs:l.baseCogs, adds:lineAdds(l).map(a=>Object.assign({},a)),
+      kcal:l.kcal||0, p:l.p||0, c:l.c||0, f:l.f||0
+    })),
+    gross: t.gross, discount: t.disc, discountKind: t.kind, net: t.net,
+    cogs: t.cogs, profit: t.profit,
+    payment,
+    ref: PAY_REF[payment] ? ($("#payref").value||"").trim() : "",
+    tendered: payment==="Cash" ? (t.tendered>0 ? t.tendered : t.net) : t.net,
+    change: payment==="Cash" && t.tendered>0 ? Math.max(0,t.change) : 0,
+    voided:false
+  };
+  day.orders.push(order);
+  days[key] = day;
+  try{ await store.saveDay(key, day); }
+  catch(e){ toast("Order recorded here, but saving failed"); }
+  showReceipt(order);
+  cart = [];
+  $("#tendered").value = "";
+  $("#payref").value = "";
+  $("#custname").value = "";
+  $("#disc").value = "none"; $("#discamtwrap").style.display = "none"; $("#discamt").value = 0;
+  renderCart(); renderCatalog();
+  $("#rail").classList.remove("open");
+}
+
+function receiptHTML(o){
+  return o.items.map(l=>{
+    const tag = lineTag(l);
+    const extra = [tag, l.opt].filter(Boolean).join(" · ");
+    return `<div class="r"><span>${l.qty} × ${esc(l.name)}${extra?` <span class="muted">(${esc(extra)})</span>`:""}</span><span>${peso(basePrice(l)*l.qty)}</span></div>`
+      + addRows(l, "r addr");
+  }).join("")
+  + `<hr>`
+  + `<div class="r"><span>Subtotal</span><span>${peso(o.gross)}</span></div>`
+  + (o.discount>0?`<div class="r"><span>${esc(DISC_LABEL[o.discountKind]||"Discount")}</span><span>−${peso(o.discount)}</span></div>`:"")
+  + `<div class="r big"><span>Total</span><span>${peso(o.net)}</span></div>`
+  + `<div class="r"><span>${esc(o.payment)}</span><span>${peso(o.tendered)}</span></div>`
+  + (refOf(o)?`<div class="r"><span>Reference</span><span style="word-break:break-all;text-align:right">${esc(refOf(o))}</span></div>`:"")
+  + (o.payment==="Cash"?`<div class="r"><span>Change</span><span>${peso(o.change)}</span></div>`:"");
+}
+
+/* the slip that comes off the printer */
+function printOrder(o){
+  const when = new Date(o.ts).toLocaleString("en-PH",{dateStyle:"medium",timeStyle:"short"});
+  const who = custOf(o);
+  const tot = orderMacros(o.items);
+
+  const items = o.items.map(l=>{
+    const m = lineMacros(l);
+    const tag = lineTag(l);
+    const extra = [tag, l.opt].filter(Boolean).join(" · ");
+    return `<div class="r"><span>${l.qty} × ${esc(l.name)}</span><span>${peso(basePrice(l)*l.qty)}</span></div>`
+      + (extra?`<div class="opt" style="padding-left:9px">${esc(extra)}</div>`:"")
+      + addRows(l, "r addr")
+      + (m.kcal||m.p?`<div class="mac">${g1(m.kcal*l.qty)} kcal · P ${g1(m.p*l.qty)}g · C ${g1(m.c*l.qty)}g · F ${g1(m.f*l.qty)}g</div>`:"");
+  }).join("");
+
+  $("#printarea").innerHTML =
+    `<h3>fuelora</h3><div class="tl">made to fuel an active life</div>
+     <div class="r"><span>${esc(o.no)}</span><span>${esc(when)}</span></div>
+     <div class="cust">Customer<br><b>${esc(who || "Walk-in")}</b></div>
+     <hr>${items}<hr>
+     <div class="lbl">NUTRITION FOR THIS ORDER</div>
+     <div class="r"><span>Calories</span><span>${g1(tot.kcal)} kcal</span></div>
+     <div class="r"><span>Protein</span><span>${g1(tot.p)} g</span></div>
+     <div class="r"><span>Carbs</span><span>${g1(tot.c)} g</span></div>
+     <div class="r"><span>Fat</span><span>${g1(tot.f)} g</span></div>
+     <div class="pay">
+       <div class="r"><span>Subtotal</span><span>${peso(o.gross)}</span></div>
+       ${o.discount>0?`<div class="r"><span>${esc(DISC_LABEL[o.discountKind]||"Discount")}</span><span>−${peso(o.discount)}</span></div>`:""}
+       <div class="r big"><span>TOTAL</span><span>${peso(o.net)}</span></div>
+       <div class="r"><span>Paid by ${esc(o.payment)}</span><span>${peso(o.tendered)}</span></div>
+       ${refOf(o)?`<div style="font-size:10.5px;word-break:break-all;padding-top:2px">Ref: ${esc(refOf(o))}</div>`:""}
+       ${o.payment==="Cash"?`<div class="r"><span>Change</span><span>${peso(o.change)}</span></div>`:""}
+     </div>
+     ${o.voided?`<div class="lbl" style="text-align:center">*** VOIDED ***</div>`:""}
+     <div class="ft">Thank you${who?", "+esc(who):""} — see you at your next session.</div>`;
+  window.print();
+}
+
+function showReceipt(o){
+  const when = new Date(o.ts).toLocaleString("en-PH",{dateStyle:"medium",timeStyle:"short"});
+  const who = custOf(o);
+  openModal(`
+    <div class="modal-h">
+      <h3>Order ${esc(o.no)}</h3>
+      <p>${who?esc(who)+" · ":""}${esc(when)} · ${esc(o.payment)}</p>
+    </div>
+    <div class="modal-b rcpt">
+      ${receiptHTML(o)}
+      ${o.payment==="Cash"?`<div class="change"><span>Change due</span><b>${peso(o.change)}</b></div>`:""}
+      <p class="muted" style="margin:12px 0 0;font-size:12.5px">Cost ${peso(o.cogs)} · profit ${peso(o.profit)}</p>
+    </div>
+    <div class="modal-f">
+      <button class="btn ghost" id="printbtn" style="flex:1">Print</button>
+      <button class="btn" id="donebtn">Next order</button>
+    </div>`);
+  $("#donebtn").onclick = closeModal;
+  $("#printbtn").onclick = ()=>printOrder(o);
+}
+
+/* the whole order, opened from history */
+function showOrderDetail(no){
+  const found = findOrder(no);
+  if(!found) return;
+  const o = found.order;
+  const when = new Date(o.ts).toLocaleString("en-PH",{dateStyle:"full",timeStyle:"short"});
+  const who = custOf(o);
+  const tot = orderMacros(o.items);
+
+  const items = o.items.map(l=>{
+    const m = lineMacros(l);
+    const tag = lineTag(l);
+    return `<div class="it">
+      <div class="top"><span>${l.qty} × ${esc(l.name)} ${tag?`<span class="minitag ${tag.toLowerCase()}">${esc(tag)}</span>`:""}</span><span>${peso(basePrice(l)*l.qty)}</span></div>
+      ${addRows(l, "addr")}
+      <div class="sub">${peso(l.price)} each${lineAdds(l).length?" with add-ons":""}${l.opt?` · served as <span class="style">${esc(l.opt)}</span>`:""} · cost ${peso(l.cogs*l.qty)}</div>
+      ${m.kcal||m.p?`<div class="mac">
+        <span><b>${g1(m.kcal*l.qty)}</b> kcal</span>
+        <span><b>${g1(m.p*l.qty)}</b>g protein</span>
+        <span><b>${g1(m.c*l.qty)}</b>g carbs</span>
+        <span><b>${g1(m.f*l.qty)}</b>g fat</span>
+      </div>`:""}
+    </div>`;
+  }).join("");
+
+  openModal(`
+    <div class="modal-h">
+      <h3>Order ${esc(o.no)}${o.voided?' <span class="tag void">Voided</span>':""}</h3>
+      <p>${esc(when)}</p>
+    </div>
+    <div class="modal-b det">
+      <div class="head">
+        <span>Customer <b>${esc(who || "Walk-in")}</b></span>
+        <span>Payment <b>${esc(o.payment)}</b></span>
+        ${refOf(o)?`<span style="word-break:break-all">Reference <b>${esc(refOf(o))}</b></span>`:(PAY_REF[o.payment]?`<span>Reference <b class="neg">not entered</b></span>`:"")}
+        <span>Items <b>${o.items.reduce((a,l)=>a+l.qty,0)}</b></span>
+      </div>
+      ${items}
+      <div class="mac" style="margin-top:12px">
+        <span>Order total <b>${g1(tot.kcal)}</b> kcal</span>
+        <span><b>${g1(tot.p)}</b>g protein</span>
+        <span><b>${g1(tot.c)}</b>g carbs</span>
+        <span><b>${g1(tot.f)}</b>g fat</span>
+      </div>
+      <div class="rcpt" style="margin-top:12px">
+        <div class="r"><span>Subtotal</span><span>${peso(o.gross)}</span></div>
+        ${o.discount>0?`<div class="r"><span>${esc(DISC_LABEL[o.discountKind]||"Discount")}</span><span class="neg">−${peso(o.discount)}</span></div>`:""}
+        <div class="r"><span>Cost of goods</span><span>${peso(o.cogs)}</span></div>
+        <div class="r"><span>Profit</span><span class="${o.profit<0?"neg":"pos"}">${peso(o.profit)}</span></div>
+      </div>
+      <div class="bignum">
+        <span>Total <span class="pm">paid by ${esc(o.payment)}</span></span>
+        <b>${peso(o.net)}</b>
+      </div>
+      ${o.payment==="Cash"?`<div class="rcpt" style="margin-top:8px">
+        <div class="r"><span>Cash received</span><span>${peso(o.tendered)}</span></div>
+        <div class="r"><span>Change given</span><span>${peso(o.change)}</span></div>
+      </div>`:""}
+    </div>
+    <div class="modal-f">
+      <button class="btn ghost" id="dprint" style="flex:1">Print</button>
+      <button class="btn" id="dclose">Close</button>
+    </div>`);
+  $("#dclose").onclick = closeModal;
+  $("#dprint").onclick = ()=>printOrder(o);
+}
+
+/* ============ sales ============ */
+async function loadAll(){
+  if(loadedAll) return;
+  try{ days = Object.assign({}, days, await store.allDays()); loadedAll = true; }
+  catch(e){ toast("Couldn't load older days"); }
+}
+
+/* every calendar day the current range covers, oldest first */
+function rangeKeys(){
+  const t = todayKey();
+  if(range === "day") return [selDate || t];
+  if(range === "7" || range === "30"){
+    const n = parseInt(range,10), out = [];
+    for(let i=n-1;i>=0;i--) out.push(shiftKey(t,-i));
+    return out;
+  }
+  if(range === "month"){
+    const out = []; let k = t.slice(0,8)+"01";
+    while(k <= t){ out.push(k); k = shiftKey(k,1); }
+    return out;
+  }
+  // all time: every day that has at least one order
+  return Object.keys(days).filter(k => dayOrders(k).length || dayExpenses(k).length).sort();
+}
+const dayOrders = k => (days[k] && days[k].orders) || [];
+const dayExpenses = k => (days[k] && days[k].expenses) || [];
+const pesoSigned = v => v < 0 ? "−" + peso(-v) : peso(v);
+const expTotal = keys => keys.reduce((a,k)=>a+dayExpenses(k).reduce((b,x)=>b+(+x.amount||0),0),0);
+function ordersInRange(){ return rangeKeys().flatMap(dayOrders); }
+const needsAll = () => !(range === "day" && (selDate || todayKey()) === todayKey());
+
+function stats(orders){
+  const s = {orders:0, voided:0, units:0, gross:0, disc:0, net:0, cogs:0};
+  orders.forEach(o=>{
+    if(o.voided){ s.voided++; return; }
+    s.orders++;
+    s.units += o.items.reduce((x,l)=>x+l.qty,0);
+    s.gross += o.gross; s.disc += o.discount; s.net += o.net; s.cogs += o.cogs;
+  });
+  s.profit = s.net - s.cogs;
+  s.margin = s.net ? s.profit / s.net * 100 : 0;
+  return s;
+}
+
+/* ============ payments & cash count ============
+   Expected = what the POS rang up per payment method (voided orders left out).
+   Received = what was actually counted in the drawer / seen in each account,
+   saved on the day as day.count = {Cash, GCash, MariBank, "Crypto stables", ts}. */
+const METHODS = [
+  {key:"Cash",           label:"Cash",     hint:"Counted in the drawer, starting float taken out"},
+  {key:"GCash",          label:"GCash",    hint:"Received in the GCash app"},
+  {key:"MariBank",       label:"MariBank", hint:"Received in MariBank"},
+  {key:"Crypto stables", label:"Crypto",   hint:"Stablecoins received, in pesos"}
+];
+const EPS = 0.005;
+let countDraft = null;     // {k, vals:{method:string}} while typing, so live refreshes don't wipe it
+
+function payExpected(orders){
+  const e = {};
+  METHODS.forEach(m=>{ e[m.key] = {n:0, amt:0}; });
+  orders.forEach(o=>{
+    if(o.voided) return;
+    const b = e[o.payment]; if(!b) return;
+    b.n++; b.amt += +o.net||0;
+  });
+  return e;
+}
+const dayCount = k => (days[k] && days[k].count) || null;
+const numOrNull = v => (v === "" || v === null || v === undefined || isNaN(+v)) ? null : Math.round(+v*100)/100;
+
+/* compare expected vs received for one day; vals overrides the saved count (for live typing) */
+function reconDay(k, vals){
+  const exp = payExpected(dayOrders(k));
+  const saved = dayCount(k) || {};
+  const src = vals || saved;
+  const rows = METHODS.map(m=>{
+    const e = exp[m.key].amt, n = exp[m.key].n;
+    const a = numOrNull(src[m.key]);
+    const diff = a === null ? null : a - e;
+    return {m, n, exp:e, act:a, diff};
+  });
+  const expTot = rows.reduce((s,r)=>s+r.exp,0);
+  const need = rows.filter(r=>r.exp > EPS || r.act !== null);
+  const counted = need.filter(r=>r.act !== null);
+  const missing = counted.reduce((s,r)=>s+(r.diff < -EPS ? -r.diff : 0),0);
+  const over    = counted.reduce((s,r)=>s+(r.diff >  EPS ?  r.diff : 0),0);
+  const actTot  = counted.reduce((s,r)=>s+r.act,0);
+  const state = !need.length ? "none"
+    : !counted.length ? "uncounted"
+    : counted.length < need.length ? "partial" : "done";
+  return {k, rows, expTot, actTot, missing, over, state, anyCount: counted.length>0, ts: saved.ts || null};
+}
+
+function methodStatus(r){
+  if(r.act === null) return r.exp > EPS ? `<span class="st wait">Not counted</span>` : `<span class="muted">—</span>`;
+  if(Math.abs(r.diff) <= EPS) return `<span class="st ok">Balanced</span>`;
+  return r.diff < 0 ? `<span class="st short">Missing ${peso(-r.diff)}</span>` : `<span class="st over">Over ${peso(r.diff)}</span>`;
+}
+function dayStatus(R){
+  if(R.state === "none") return `<span class="muted">No sales</span>`;
+  if(R.state === "uncounted") return `<span class="st wait">Not counted</span>`;
+  const parts = [];
+  if(R.missing > EPS) parts.push(`<span class="st short">Missing ${peso(R.missing)}</span>`);
+  if(R.over > EPS) parts.push(`<span class="st over">Over ${peso(R.over)}</span>`);
+  if(R.state === "partial") parts.push(`<span class="st wait">Partly counted</span>`);
+  if(!parts.length) parts.push(`<span class="st ok">Balanced</span>`);
+  return parts.join(" ");
+}
+function statusText(R){
+  if(R.state === "none") return "No sales";
+  if(R.state === "uncounted") return "Not counted";
+  const p = [];
+  if(R.missing > EPS) p.push("Missing "+R.missing.toFixed(2));
+  if(R.over > EPS) p.push("Over "+R.over.toFixed(2));
+  if(R.state === "partial") p.push("Partly counted");
+  return p.length ? p.join("; ") : "Balanced";
+}
+const diffCell = d => d === null ? `<span class="muted">—</span>`
+  : Math.abs(d) <= EPS ? peso(0)
+  : `<span class="${d<0?"neg":"pos"}">${d<0?"−":"+"}${peso(Math.abs(d))}</span>`;
+
+function renderPayments(keys){
+  const lede = $("#paylede");
+  if(range === "day"){
+    lede.textContent = "What the POS rang up for each payment method, next to what you actually counted or received. Enter the real amounts at closing and save: a matching day shows as balanced, anything short shows as missing.";
+    renderPayDay(keys[0]);
+  }else{
+    lede.textContent = "Sales per payment method for each day, with the result of that day's count. Tap a day to count it or fix its numbers.";
+    renderPayRange(keys);
+  }
+}
+
+function payBanner(R){
+  let banner = "", cls = "";
+  if(R.state === "none"){ banner = `<b class="big">No sales to count</b><span>Nothing was charged on this date.</span>`; }
+  else if(R.state === "uncounted"){ banner = `<b class="big">Not counted yet</b><span>Enter what you received for each method, then save.</span>`; }
+  else if(R.missing > EPS){ cls = "short"; banner = `<b class="big">${peso(R.missing)} missing</b><span>Received ${peso(R.actTot)} against ${peso(R.expTot)} rung up${R.over>EPS?`, with ${peso(R.over)} over on another method`:""}${R.state==="partial"?", some methods not counted yet":""}.</span>`; }
+  else if(R.over > EPS){ cls = "over"; banner = `<b class="big">${peso(R.over)} over</b><span>More came in than was rung up${R.state==="partial"?", some methods not counted yet":""}. Check for an order that wasn't entered.</span>`; }
+  else if(R.state === "partial"){ banner = `<b class="big">Partly counted</b><span>What's counted so far matches. Finish the rest to confirm the day.</span>`; }
+  else { cls = "ok"; banner = `<b class="big">Balanced</b><span>Everything received matches the ${peso(R.expTot)} rung up.</span>`; }
+
+  return {banner, cls};
+}
+
+function renderPayDay(k){
+  const ae = document.activeElement;
+  const refocus = ae && ae.classList && ae.classList.contains("cntin") ? {id:ae.id, pos:ae.selectionStart} : null;
+  const draft = countDraft && countDraft.k === k ? countDraft.vals : null;
+  const R = reconDay(k, draft);
+  const saved = dayCount(k) || {};
+  const val = m => {
+    const v = draft ? draft[m.key] : saved[m.key];
+    return v === null || v === undefined ? "" : String(v);
+  };
+  const nOrders = R.rows.reduce((s,r)=>s+r.n,0);
+  const {banner, cls} = payBanner(R);
+  const rows = R.rows.map((r,i)=>`
+    <tr class="${r.exp>EPS||r.act!==null?"":"zero"}">
+      <td><b>${esc(r.m.label)}</b><small>${esc(r.m.hint)}</small></td>
+      <td>${r.n}</td>
+      <td>${peso(r.exp)}</td>
+      <td><input type="number" class="cntin" data-m="${esc(r.m.key)}" id="cnt-${i}" min="0" step="0.01" inputmode="decimal" placeholder="${r.exp.toFixed(2)}" value="${esc(val(r.m))}" aria-label="${esc(r.m.label)} received"></td>
+      <td id="pd-${i}">${diffCell(r.diff)}</td>
+      <td id="ps-${i}">${methodStatus(r)}</td>
+    </tr>`).join("");
+  const totDiff = R.anyCount ? R.over - R.missing : null;
+  $("#paysec").innerHTML = `
+    <div class="paybanner ${cls}" id="paybanner">${banner}</div>
+    <div style="overflow-x:auto"><table id="paytable">
+      <thead><tr><th>Payment method</th><th>Orders</th><th>Expected (POS)</th><th>Actually received</th><th>Difference</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td>Total</td><td>${nOrders}</td><td>${peso(R.expTot)}</td><td id="pt-act">${R.anyCount?peso(R.actTot):"—"}</td><td id="pt-diff">${diffCell(totDiff)}</td><td id="pt-st">${dayStatus(R)}</td></tr></tfoot>
+    </table></div>
+    <div class="payfoot">
+      <button class="btn" data-paysave="${k}">Save count</button>
+      <button class="linkbtn" data-payfill="${k}">Fill in expected amounts</button>
+      ${dayCount(k)?`<button class="linkbtn danger" data-payclear="${k}">Clear count</button>`:""}
+      <span class="when">${R.ts?"Last saved "+esc(new Date(R.ts).toLocaleString("en-PH",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})):"Not saved yet"}${draft?" · unsaved changes":""}</span>
+    </div>`;
+  if(refocus){ const el = document.getElementById(refocus.id); if(el){ el.focus(); } }
+}
+
+/* refresh just the numbers while typing so the cursor stays put */
+function previewCount(k){
+  const vals = {};
+  document.querySelectorAll("#paytable .cntin").forEach(i=>{ vals[i.dataset.m] = i.value; });
+  countDraft = {k, vals};
+  const R = reconDay(k, vals);
+  R.rows.forEach((r,i)=>{
+    const d = $("#pd-"+i), st = $("#ps-"+i);
+    if(d) d.innerHTML = diffCell(r.diff);
+    if(st) st.innerHTML = methodStatus(r);
+  });
+  $("#pt-act").innerHTML = R.anyCount ? peso(R.actTot) : "—";
+  $("#pt-diff").innerHTML = diffCell(R.anyCount ? R.over - R.missing : null);
+  $("#pt-st").innerHTML = dayStatus(R);
+  const bn = payBanner(R), el = $("#paybanner");
+  if(el){ el.className = "paybanner " + bn.cls; el.innerHTML = bn.banner; }
+  const w = document.querySelector("#paysec .when");
+  if(w && !/unsaved/.test(w.textContent)) w.textContent += " · unsaved changes";
+}
+
+function renderPayRange(keys){
+  const t = todayKey();
+  const per = keys.map(k=>reconDay(k));
+  const sum = {};
+  METHODS.forEach(m=>{ sum[m.key] = 0; });
+  let expAll = 0, actAll = 0, missAll = 0, overAll = 0, counted = 0, toCount = 0, balanced = 0, shortDays = 0;
+  per.forEach(R=>{
+    R.rows.forEach(r=>{ sum[r.m.key] += r.exp; });
+    expAll += R.expTot; actAll += R.actTot; missAll += R.missing; overAll += R.over;
+    if(R.state !== "none") toCount++;
+    if(R.state === "done") counted++;
+    if(R.state === "done" && R.missing <= EPS && R.over <= EPS) balanced++;
+    if(R.missing > EPS) shortDays++;
+  });
+  const rows = per.slice().reverse().map(R=>`
+    <tr class="${R.state==="none"?"zero":""}" data-day="${R.k}" tabindex="0">
+      <td><b>${esc(fmtMed(R.k))}</b><small>${esc(fmtWk(R.k,"long"))}${R.k===t?", today":""}</small></td>
+      ${R.rows.map(r=>`<td>${r.exp>EPS?peso(r.exp):"—"}</td>`).join("")}
+      <td><b>${peso(R.expTot)}</b></td>
+      <td>${R.anyCount?peso(R.actTot):"—"}</td>
+      <td>${diffCell(R.anyCount ? R.over - R.missing : null)}</td>
+      <td>${dayStatus(R)}</td>
+    </tr>`).join("");
+  let foot = "";
+  if(missAll > EPS) foot = `<span class="st short">Missing ${peso(missAll)}</span>`;
+  if(overAll > EPS) foot += (foot?" ":"") + `<span class="st over">Over ${peso(overAll)}</span>`;
+  if(!foot) foot = counted && counted === toCount ? `<span class="st ok">All balanced</span>` : "";
+  const cnt = toCount ? `<small class="muted" style="display:block;font-weight:500;font-size:12px;margin-top:3px">${balanced} of ${toCount} day${toCount===1?"":"s"} balanced${shortDays?`, ${shortDays} short`:""}${toCount-counted?`, ${toCount-counted} not fully counted`:""}</small>` : "";
+  $("#paysec").innerHTML = `<div style="overflow-x:auto"><table id="paytable">
+    <thead><tr><th>Date</th>${METHODS.map(m=>`<th>${esc(m.label)}</th>`).join("")}<th>Total sales</th><th>Received</th><th>Difference</th><th>Status</th></tr></thead>
+    <tbody>${rows || `<tr><td colspan="9" class="muted" style="padding:26px;text-align:center">No sales in this range yet.</td></tr>`}</tbody>
+    ${rows?`<tfoot><tr><td>Total, ${keys.length} day${keys.length===1?"":"s"}</td>${METHODS.map(m=>`<td>${peso(sum[m.key])}</td>`).join("")}
+      <td>${peso(expAll)}</td><td>${actAll?peso(actAll):"—"}</td><td>${diffCell(missAll||overAll ? overAll - missAll : (counted?0:null))}</td><td style="white-space:normal">${foot}${cnt}</td></tr></tfoot>`:""}
+  </table></div>`;
+}
+
+async function saveCount(k, vals){
+  let day;
+  try{ day = (await store.day(k)) || days[k] || {date:k, orders:[]}; }
+  catch(e){ day = days[k] || {date:k, orders:[]}; }
+  if(vals){
+    const c = {ts:new Date().toISOString()};
+    METHODS.forEach(m=>{ c[m.key] = numOrNull(vals[m.key]); });
+    day.count = c;
+  }else{
+    delete day.count;
+  }
+  days[k] = day;
+  countDraft = null;
+  try{ await store.saveDay(k, day); }
+  catch(e){ toast("Count kept here, but saving failed"); }
+  renderAll();
+  if(!vals){ toast("Count cleared"); return; }
+  const R = reconDay(k);
+  toast(R.missing > EPS ? "Saved: "+peso(R.missing)+" missing"
+      : R.over > EPS ? "Saved: "+peso(R.over)+" over"
+      : R.state === "partial" ? "Saved: partly counted"
+      : "Saved: balanced");
+}
+
+function syncRangeUI(){
+  const t = todayKey();
+  if(!selDate) selDate = t;
+  document.querySelectorAll(".rangesegs [data-range]").forEach(x=>{
+    const r = x.dataset.range;
+    const on = r === "today" ? (range === "day" && selDate === t) : r === range;
+    x.setAttribute("aria-pressed", String(on));
+  });
+  document.querySelectorAll(".dayinput").forEach(dp=>{
+    dp.max = t;
+    dp.value = range === "day" ? selDate : "";
+    dp.dataset.on = String(range === "day" && selDate !== t);
+  });
+  document.querySelectorAll('[data-dstep="1"]').forEach(b=>{ b.disabled = !(range === "day" && selDate < t); });
+}
+
+async function showDay(k){
+  const t = todayKey();
+  range = "day";
+  selDate = k > t ? t : k;
+  syncRangeUI();
+  if(needsAll()) await loadAll();
+  renderAll();
+}
+
+function renderRangeLabel(keys){
+  const el = {set innerHTML(h){ document.querySelectorAll(".rangelabel").forEach(x=>{ x.innerHTML = h; }); }};
+  if(range === "day"){
+    const k = keys[0];
+    el.innerHTML = `<b>${esc(fmtLong(k))}</b><span>${esc(relDay(k))}</span>`;
+    return;
+  }
+  if(!keys.length){ el.innerHTML = `<b>No sales recorded yet</b>`; return; }
+  const a = keys[0], b = keys[keys.length-1];
+  const first = a.slice(0,4) === b.slice(0,4) ? fmtMD(a) : fmtMed(a);
+  const span = range === "all"
+    ? keys.length + (keys.length===1?" day with sales":" days with sales")
+    : keys.length + (keys.length===1?" day":" days");
+  el.innerHTML = a === b
+    ? `<b>${esc(fmtLong(a))}</b><span>${span}</span>`
+    : `<b>${esc(first)} – ${esc(fmtMed(b))}</b><span>${span}</span>`;
+}
+
+function renderByDay(keys){
+  const sec = $("#bydaysec");
+  if(range === "day"){ sec.hidden = true; return; }
+  sec.hidden = false;
+  const t = todayKey();
+  const per = keys.map(k => { const s = Object.assign({k}, stats(dayOrders(k))); s.exp = expTotal([k]); s.netProfit = s.profit - s.exp; return s; });
+  const best = per.reduce((b,d)=> d.net > (b ? b.net : 0) ? d : b, null);
+
+  // chart — oldest on the left, capped so bars stay readable
+  const CAP = 45;
+  const shown = per.slice(-CAP);
+  const max = Math.max(1, ...shown.map(d=>d.net));
+  const n = shown.length;
+  const step = n <= 10 ? 1 : Math.ceil(n/10);
+  const bars = shown.map((d,i)=>{
+    const h = d.net > 0 ? Math.max(2, d.net/max*86) : 0;
+    const dt = dateOf(d.k);
+    let lbl = "";
+    if(n <= 10) lbl = `<b>${esc(fmtWk(d.k))}</b>${esc(fmtMD(d.k))}`;
+    else if(i % step === 0){
+      lbl = `<b>${dt.getDate()}</b>${i===0 || dt.getDate()<=step ? esc(dt.toLocaleDateString("en-PH",{month:"short"})) : ""}`;
+    }
+    const tip = `${fmtWk(d.k)}, ${fmtMed(d.k)}: ${peso(d.net)} net, ${d.orders} order${d.orders===1?"":"s"}`;
+    return `<button class="col${d.net>0?"":" zero"}${d.k===t?" today":""}" data-day="${d.k}" title="${esc(tip)}" aria-label="${esc(tip)}">
+      <span class="plot">${n<=10 && d.net>0?`<span class="amt">${pesoShort(d.net)}</span>`:""}<i style="height:${h.toFixed(1)}%"></i></span>
+      <span class="lbl">${lbl}</span>
+    </button>`;
+  }).join("");
+  $("#daychart").innerHTML = `
+    <div class="charthead">
+      <span>Net sales per day${per.length>CAP?` (latest ${CAP} days shown)`:""}</span>
+      ${best?`<span>Best day <b>${esc(fmtWk(best.k))}, ${esc(fmtMed(best.k))}</b> at ${peso(best.net)}</span>`:`<span>No sales in this range yet</span>`}
+    </div>
+    <div class="bars">${bars || `<p class="empty" style="margin:auto">No days to show.</p>`}</div>
+    <div class="legend"><span><i style="background:var(--maroon)"></i>Net sales</span><span><i style="background:var(--olive)"></i>Today</span><span>Tap a day to see its orders</span></div>`;
+
+  // table — newest first
+  const tot = stats(keys.flatMap(dayOrders));
+  tot.exp = expTotal(keys); tot.netProfit = tot.profit - tot.exp;
+  const rows = per.slice().reverse().map(d=>`
+    <tr class="${d.orders||d.exp?"":"zero"}${best && d.k===best.k && per.length>1?" best":""}" data-day="${d.k}" tabindex="0">
+      <td><b>${esc(fmtMed(d.k))}</b><small>${esc(fmtWk(d.k,"long"))}${d.k===t?", today":""}${d.voided?` · ${d.voided} voided`:""}</small></td>
+      <td>${d.orders}</td><td>${d.units}</td><td>${peso(d.gross)}</td>
+      <td>${d.disc>0?"−"+peso(d.disc):"—"}</td><td><b>${peso(d.net)}</b></td>
+      <td>${peso(d.cogs)}</td><td class="${d.profit<0?"neg":""}">${peso(d.profit)}</td>
+      <td>${d.net?d.margin.toFixed(0)+"%":"—"}</td>
+      <td>${d.exp>0?"−"+peso(d.exp):"—"}</td><td class="${d.netProfit<0?"neg":""}"><b>${pesoSigned(d.netProfit)}</b></td>
+    </tr>`).join("");
+  $("#daytable").innerHTML = `
+    <thead><tr><th>Date</th><th>Orders</th><th>Items</th><th>Gross</th><th>Discounts</th><th>Net sales</th><th>Cost</th><th>Gross profit</th><th>Margin</th><th>Expenses</th><th>Net profit</th></tr></thead>
+    <tbody>${rows || `<tr><td colspan="11" class="muted" style="padding:26px;text-align:center">No sales in this range yet.</td></tr>`}</tbody>
+    ${rows?`<tfoot><tr><td>Total, ${keys.length} day${keys.length===1?"":"s"}</td><td>${tot.orders}</td><td>${tot.units}</td><td>${peso(tot.gross)}</td>
+      <td>${tot.disc>0?"−"+peso(tot.disc):"—"}</td><td>${peso(tot.net)}</td><td>${peso(tot.cogs)}</td><td>${peso(tot.profit)}</td>
+      <td>${tot.net?tot.margin.toFixed(0)+"%":"—"}</td><td>${tot.exp>0?"−"+peso(tot.exp):"—"}</td><td class="${tot.netProfit<0?"neg":""}">${pesoSigned(tot.netProfit)}</td></tr></tfoot>`:""}`;
+}
+
+function renderSales(){
+  syncRangeUI();
+  const keys = rangeKeys();
+  const orders = keys.flatMap(dayOrders);
+  const live = orders.filter(o=>!o.voided);
+  const S = stats(orders);
+  const {gross, disc, net, cogs, profit, units} = S;
+  const exp = expTotal(keys);
+  const netProfit = profit - exp;
+  renderRangeLabel(keys);
+  const recs = keys.map(k=>reconDay(k));
+  const recv = recs.reduce((a,R)=>a+R.actTot,0);
+  const missing = recs.reduce((a,R)=>a+R.missing,0);
+  const anyCount = recs.some(R=>R.anyCount);
+
+  let extra = "";
+  if(range !== "day"){
+    const per = keys.map(k=>({k, net:stats(dayOrders(k)).net}));
+    const selling = per.filter(d=>d.net>0).length;
+    extra = `<div class="kpi"><div class="k">Daily average</div><div class="v sm">${peso(keys.length?net/keys.length:0)}</div></div>
+      <div class="kpi"><div class="k">Days with sales</div><div class="v">${selling}<span class="muted" style="font-size:14px;font-weight:500"> of ${keys.length}</span></div></div>`;
+  }
+  $("#kpis").innerHTML = `
+    <div class="kpi"><div class="k">Orders</div><div class="v">${live.length}</div></div>
+    <div class="kpi"><div class="k">Items sold</div><div class="v">${units}</div></div>
+    <div class="kpi"><div class="k">Gross sales</div><div class="v sm">${peso(gross)}</div></div>
+    <div class="kpi"><div class="k">Discounts</div><div class="v sm">${disc>0?"−"+peso(disc):peso(0)}</div></div>
+    <div class="kpi"><div class="k">Net sales</div><div class="v sm">${peso(net)}</div></div>
+    <div class="kpi"><div class="k">Cost of goods</div><div class="v sm">${peso(cogs)}</div></div>
+    <div class="kpi"><div class="k">Gross profit</div><div class="v sm">${peso(profit)}</div></div>
+    <div class="kpi"><div class="k">Gross margin</div><div class="v sm">${net?((profit/net)*100).toFixed(1):"0.0"}%</div></div>
+    <div class="kpi"><div class="k">Expenses</div><div class="v sm">${exp>0?"−"+peso(exp):peso(0)}</div></div>
+    <div class="kpi accent"><div class="k">Net profit</div><div class="v sm">${pesoSigned(netProfit)}</div></div>
+    <div class="kpi"><div class="k">Net margin</div><div class="v sm">${net?((netProfit/net)*100).toFixed(1):"0.0"}%</div></div>
+    <div class="kpi"><div class="k">Average order</div><div class="v sm">${peso(live.length?net/live.length:0)}</div></div>
+    ${extra}
+    <div class="kpi"><div class="k">Money received</div><div class="v sm">${anyCount?peso(recv):"—"}</div></div>
+    <div class="kpi"><div class="k">Missing / loss</div><div class="v sm${missing>EPS?" neg":""}">${anyCount?peso(missing):"—"}</div></div>`;
+
+  renderBreakeven();
+  renderPayments(keys);
+  renderOpex();
+  renderExpenses(keys);
+  renderByDay(keys);
+
+  // by item
+  const agg = {}, aggAdd = {};
+  live.forEach(o=>o.items.forEach(l=>{
+    const a = agg[l.id] || (agg[l.id] = {name:l.name, qty:0, sales:0, cost:0});
+    a.qty += l.qty; a.sales += basePrice(l)*l.qty; a.cost += baseCogs(l)*l.qty;
+    lineAdds(l).forEach(x=>{
+      const b = aggAdd[x.id] || (aggAdd[x.id] = {name:"+ "+x.name+" (add-on)", qty:0, sales:0, cost:0});
+      b.qty += l.qty; b.sales += (+x.price||0)*l.qty; b.cost += (+x.cogs||0)*l.qty;
+    });
+  }));
+  const rows = Object.values(agg).sort((a,b)=>b.qty-a.qty)
+    .concat(Object.values(aggAdd).sort((a,b)=>b.qty-a.qty));
+  $("#itemtable").innerHTML = rows.length ? `
+    <thead><tr><th>Item</th><th>Sold</th><th>Sales</th><th>Cost</th><th>Profit</th><th>Margin</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td>${esc(r.name)}</td><td>${r.qty}</td><td>${peso(r.sales)}</td><td>${peso(r.cost)}</td>
+      <td>${peso(r.sales-r.cost)}</td><td>${r.sales?((r.sales-r.cost)/r.sales*100).toFixed(0):0}%</td></tr>`).join("")}</tbody>
+    <tfoot><tr><td>Total</td><td>${units}</td><td>${peso(gross)}</td><td>${peso(cogs)}</td>
+      <td>${peso(gross-cogs)}</td><td>${gross?((gross-cogs)/gross*100).toFixed(0):0}%</td></tr></tfoot>`
+    : `<tbody><tr><td colspan="6" class="muted" style="padding:26px;text-align:center">No sales ${range==="day"?"on this date":"in this range"} yet.</td></tr></tbody>`;
+
+}
+
+function renderAll(){ renderSales(); renderOrders(); }
+
+/* order history, grouped under each date */
+function renderOrders(){
+  syncRangeUI();
+  const keys = rangeKeys();
+  renderRangeLabel(keys);
+  const q = ($("#ordersearch").value||"").trim().toLowerCase();
+  let keyed = keys.flatMap(k => dayOrders(k).map(o=>({k, o})))
+    .sort((a,b)=> b.k.localeCompare(a.k) || b.o.ts.localeCompare(a.o.ts));
+  if(q){
+    keyed = keyed.filter(({o})=>{
+      const hay = [o.no, custOf(o), o.payment, refOf(o)].concat(
+        o.items.map(l=>l.name+" "+(l.opt||"")+" "+lineTag(l)+" "+addsText(l))).join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  let lastKey = null, html = "";
+  keyed.forEach(({k, o})=>{
+    if(k !== lastKey){
+      lastKey = k;
+      const ds = stats(dayOrders(k));
+      html += `<div class="dayhead"><b>${esc(fmtLong(k))}</b><span>${ds.orders} order${ds.orders===1?"":"s"} · ${peso(ds.net)} net · ${peso(ds.profit)} gross profit${expTotal([k])>0?` · ${peso(expTotal([k]))} expenses · ${pesoSigned(ds.profit-expTotal([k]))} net profit`:""}</span></div>`;
+    }
+    const time = new Date(o.ts).toLocaleTimeString("en-PH",{hour:"numeric",minute:"2-digit"});
+    const list = o.items.map(l=>{
+      const bits = [lineTag(l), l.opt].filter(Boolean).join(" ");
+      return l.qty+"× "+l.name + (bits?" ("+bits+")":"") + lineAdds(l).map(a=>" + "+a.name).join("");
+    }).join(", ");
+    const who = custOf(o);
+    html += `<div class="orderrow${o.voided?" isvoid":""}">
+      <span class="on">${esc(o.no)}</span>
+      <span class="muted tm" style="width:72px">${esc(time)}</span>
+      <span class="who${who?"":" none"}">${esc(who||"Walk-in")}</span>
+      <span class="items">${esc(list)}${refOf(o)?` <span class="ref">· Ref ${esc(shortRef(refOf(o)))}</span>`:""}</span>
+      <span class="tag${o.voided?" void":""}">${o.voided?"Voided":esc(o.payment)}</span>
+      <span class="tot">${peso(o.net)}</span>
+      <span class="acts">
+        <button class="linkbtn" data-detail="${esc(o.no)}">Details</button>
+        ${o.voided?"":`<button class="linkbtn" data-void="${esc(o.no)}">Void</button>`}
+        <button class="linkbtn danger" data-del="${esc(o.no)}">Delete</button>
+      </span>
+    </div>`;
+  });
+  const shownOrders = keyed.map(x=>x.o);
+  const ss = stats(shownOrders);
+  $("#ordsum").innerHTML = shownOrders.length
+    ? `${q?"Matching: ":""}<b>${ss.orders} order${ss.orders===1?"":"s"}</b>${ss.voided?`, ${ss.voided} voided`:""} · ${peso(ss.net)} net`
+    : "";
+  $("#orderlist").innerHTML = html || `<p class="empty">${q?"No order matches that search.":range==="day"?"No orders on this date.":"Charged orders show up here."}</p>`;
+}
+
+function findOrder(no){
+  for(const k of Object.keys(days)){
+    const d = days[k]; if(!d||!d.orders) continue;
+    const order = d.orders.find(x=>x.no===no);
+    if(order) return {key:k, day:d, order};
+  }
+  return null;
+}
+
+async function voidOrder(no){
+  const f = findOrder(no); if(!f) return;
+  f.order.voided = true;
+  try{ await store.saveDay(f.key, f.day); }catch(e){ toast("Couldn't save the void"); }
+  renderAll(); toast("Order "+no+" voided");
+}
+
+async function deleteOrder(no){
+  const f = findOrder(no); if(!f) return;
+  f.day.orders = f.day.orders.filter(x=>x.no!==no);
+  // keep the counter so the number is never handed out twice
+  f.day.seq = Math.max(f.day.seq||0, parseInt(String(no).split("-").pop(),10)||0);
+  try{ await store.saveDay(f.key, f.day); }catch(e){ toast("Couldn't save the deletion"); }
+  renderAll(); toast("Order "+no+" deleted");
+}
+
+async function exportCSV(){
+  const head = ["Order","Date","Time","Customer","Item","Base","Served as","Add-ons","Add-ons amount","Qty",
+    "Unit price","Line sales","Unit cost","Line cost","Line profit",
+    "Line kcal","Line protein (g)","Line carbs (g)","Line fat (g)",
+    "Order discount","Order total","Payment","Reference","Status"];
+  const lines = [head.join(",")];
+  const q = v => /[",\n]/.test(String(v)) ? '"'+String(v).replace(/"/g,'""')+'"' : String(v);
+  ordersInRange().sort((a,b)=>a.ts.localeCompare(b.ts)).forEach(o=>{
+    const d = new Date(o.ts);
+    o.items.forEach(l=>{
+      const m = lineMacros(l);
+      lines.push([o.no, keyOf(d), d.toLocaleTimeString("en-PH"),
+        custOf(o)||"Walk-in", l.name, lineTag(l), l.opt||"", addsText(l), (addsPrice(l)*l.qty).toFixed(2), l.qty,
+        l.price.toFixed(2), (l.price*l.qty).toFixed(2), l.cogs.toFixed(2), (l.cogs*l.qty).toFixed(2),
+        ((l.price-l.cogs)*l.qty).toFixed(2),
+        (m.kcal*l.qty).toFixed(1), (m.p*l.qty).toFixed(1), (m.c*l.qty).toFixed(1), (m.f*l.qty).toFixed(1),
+        o.discount.toFixed(2), o.net.toFixed(2), o.payment, refOf(o),
+        o.voided?"Voided":"Paid"].map(q).join(","));
+    });
+  });
+  try{
+    downloadText("fuelora-orders-"+rangeSlug()+".csv", lines.join("\n"), "text/csv");
+  }catch(e){ toast("Download didn't go through"); }
+}
+
+function rangeSlug(){
+  const k = rangeKeys();
+  if(!k.length) return todayKey();
+  return k[0] === k[k.length-1] ? k[0] : k[0]+"_to_"+k[k.length-1];
+}
+
+/* one row per date: what the day took in and what it kept */
+async function exportDaysCSV(){
+  const q = v => /[",\n]/.test(String(v)) ? '"'+String(v).replace(/"/g,'""')+'"' : String(v);
+  const lines = [["Date","Day","Orders","Voided","Items","Gross sales","Discounts","Net sales","Cost of goods","Gross profit","Margin %","Expenses","Expense details","Net profit",
+    "Cash","GCash","MariBank","Crypto","Received","Missing","Over","Payment status"].join(",")];
+  rangeKeys().forEach(k=>{
+    const d = stats(dayOrders(k));
+    lines.push([k, fmtWk(k,"long"), d.orders, d.voided, d.units, d.gross.toFixed(2), d.disc.toFixed(2),
+      d.net.toFixed(2), d.cogs.toFixed(2), d.profit.toFixed(2), d.net?d.margin.toFixed(1):"0.0",
+      expTotal([k]).toFixed(2), dayExpenses(k).map(x=>x.what+" "+(+x.amount).toFixed(2)).join("; "),
+      (d.profit-expTotal([k])).toFixed(2)]
+      .concat((R=>R.rows.map(r=>r.exp.toFixed(2)).concat([R.anyCount?R.actTot.toFixed(2):"", R.missing.toFixed(2), R.over.toFixed(2), statusText(R)]))(reconDay(k)))
+      .map(q).join(","));
+  });
+  try{
+    downloadText("fuelora-daily-"+rangeSlug()+".csv", lines.join("\n"), "text/csv");
+  }catch(e){ toast("Download didn't go through"); }
+}
+
+/* ============ expenses ============ */
+let expDateTouched = false;
+function renderExpenses(keys){
+  const t = todayKey();
+  const dIn = $("#expdate");
+  dIn.max = t;
+  if(!expDateTouched) dIn.value = range === "day" ? (selDate || t) : t;
+  const list = keys.flatMap(k => dayExpenses(k).map(x=>({k, x})))
+    .sort((a,b)=> b.k.localeCompare(a.k) || String(b.x.ts).localeCompare(String(a.x.ts)));
+  if(!list.length){
+    $("#explist").innerHTML = `<p class="empty" style="padding:20px">No expenses ${range==="day"?"on this date":"in this range"} yet. Add one above and it comes straight off gross profit.</p>`;
+    return;
+  }
+  const total = list.reduce((a,{x})=>a+(+x.amount||0),0);
+  $("#explist").innerHTML = list.map(({k,x})=>`
+    <div class="exprow">
+      <span class="ed">${esc(fmtMed(k))}</span>
+      <span class="ew">${esc(x.what)}</span>
+      <span class="ea">${peso(+x.amount||0)}</span>
+      <span class="acts">
+        <button class="linkbtn" data-expedit="${esc(x.id)}" data-expday="${k}">Edit</button>
+        <button class="linkbtn danger" data-expdel="${esc(x.id)}" data-expday="${k}">Delete</button>
+      </span>
+    </div>`).join("")
+    + `<div class="exptotal"><span>Total expenses, ${list.length} item${list.length===1?"":"s"}</span><span>${peso(total)}</span></div>`;
+}
+
+async function addExpense(){
+  const what = ($("#expwhat").value||"").trim();
+  const amt = parseFloat($("#expamt").value);
+  const t = todayKey();
+  let k = $("#expdate").value || t;
+  if(k > t) k = t;
+  if(!what){ toast("Type what the expense was for"); $("#expwhat").focus(); return; }
+  if(!(amt > 0)){ toast("Enter an amount above zero"); $("#expamt").focus(); return; }
+  let day;
+  try{ day = (await store.day(k)) || days[k] || {date:k, orders:[]}; }
+  catch(e){ day = days[k] || {date:k, orders:[]}; }
+  day.expenses = day.expenses || [];
+  day.expenses.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    what, amount: Math.round(amt*100)/100, ts: new Date().toISOString()
+  });
+  days[k] = day;
+  try{ await store.saveDay(k, day); }
+  catch(e){ toast("Expense added here, but saving failed"); }
+  $("#expwhat").value = ""; $("#expamt").value = "";
+  const shown = rangeKeys().includes(k);
+  expDateTouched = false;
+  renderAll();
+  toast(shown ? "Expense added" : "Expense added to " + fmtMed(k));
+}
+
+async function deleteExpense(k, id){
+  const day = days[k]; if(!day || !day.expenses) return;
+  day.expenses = day.expenses.filter(x=>x.id !== id);
+  try{ await store.saveDay(k, day); }catch(e){ toast("Couldn't save the deletion"); }
+  renderAll(); toast("Expense deleted");
+}
+
+$("#expadd").onclick = addExpense;
+$("#expamt").addEventListener("keydown", e=>{ if(e.key === "Enter") addExpense(); });
+$("#expwhat").addEventListener("keydown", e=>{ if(e.key === "Enter") $("#expamt").focus(); });
+$("#expdate").addEventListener("change", ()=>{ expDateTouched = true; });
+$("#explist").addEventListener("click", e=>{
+  const ed = e.target.closest("[data-expedit]");
+  if(ed){ editExpense(ed.dataset.expday, ed.dataset.expedit); return; }
+  const b = e.target.closest("[data-expdel]"); if(!b) return;
+  const x = dayExpenses(b.dataset.expday).find(y=>y.id===b.dataset.expdel);
+  confirmDialog("Delete this expense?", (x ? x.what + ", " + peso(+x.amount||0) + ". " : "") + "It stops coming off profit for " + fmtMed(b.dataset.expday) + ".", "Delete expense", ()=>deleteExpense(b.dataset.expday, b.dataset.expdel));
+});
+
+function editExpense(k, id){
+  const x = dayExpenses(k).find(y=>y.id===id); if(!x) return;
+  const t = todayKey();
+  openModal(`<div class="modal-h"><h3>Edit expense</h3><p>Logged on ${esc(fmtMed(k))}. Changes show up in every total straight away.</p></div>
+    <div class="modal-b" style="display:flex;flex-direction:column;gap:10px">
+      <div class="field"><label for="ee_date">Date</label><input type="date" id="ee_date" max="${t}" value="${k}"></div>
+      <div class="field"><label for="ee_what">What it was for</label><input type="text" id="ee_what" list="expsuggest" maxlength="80" value="${esc(x.what)}"></div>
+      <div class="field"><label for="ee_amt">Amount (₱)</label><input type="number" id="ee_amt" min="0" step="0.01" inputmode="decimal" value="${(+x.amount||0).toFixed(2)}"></div>
+    </div>
+    <div class="modal-f"><button class="btn ghost" style="flex:1" id="ee_no">Cancel</button><button class="btn" id="ee_yes">Save changes</button></div>`);
+  $("#ee_no").onclick = closeModal;
+  $("#ee_yes").onclick = async ()=>{
+    const what = ($("#ee_what").value||"").trim();
+    const amt = parseFloat($("#ee_amt").value);
+    let nk = $("#ee_date").value || k; if(nk > t) nk = t;
+    if(!what){ toast("Type what the expense was for"); $("#ee_what").focus(); return; }
+    if(!(amt > 0)){ toast("Enter an amount above zero"); $("#ee_amt").focus(); return; }
+    const upd = Object.assign({}, x, {what, amount:Math.round(amt*100)/100, edited:new Date().toISOString()});
+    try{
+      if(nk === k){
+        const day = days[k];
+        day.expenses = day.expenses.map(y=> y.id===id ? upd : y);
+        await store.saveDay(k, day);
+      }else{
+        const from = days[k];
+        from.expenses = from.expenses.filter(y=>y.id!==id);
+        let to;
+        try{ to = (await store.day(nk)) || days[nk] || {date:nk, orders:[]}; }catch(e){ to = days[nk] || {date:nk, orders:[]}; }
+        to.expenses = (to.expenses||[]).concat(upd);
+        days[nk] = to;
+        await store.saveDay(k, from);
+        await store.saveDay(nk, to);
+      }
+    }catch(e){ toast("Changed here, but saving failed"); }
+    closeModal(); renderAll();
+    toast(nk === k || rangeKeys().includes(nk) ? "Expense updated" : "Expense moved to " + fmtMed(nk));
+  };
+}
+
+/* ============ OPEX & breakeven ============
+   Defaults come from the "OPEX & Breakeven" sheet. All of it is editable
+   under Sales → Business expenses and saved with the rest of the settings. */
+const OPEX_DEFAULT = {
+  hours:10, daysPerMonth:30, staff:1, rate:50,
+  lines:[
+    {id:"elec",    name:"Electricity",            amount:1500},
+    {id:"trans",   name:"Transportation",         amount:1000},
+    {id:"rent",    name:"Rent / stall fee",       amount:0},
+    {id:"permits", name:"Permits, fees & others", amount:0}
+  ],
+  contingency:10, capital:32100.11, paybackMonths:6
+};
+function normalizeOpex(o){
+  const d = clone(OPEX_DEFAULT);
+  if(!o || typeof o !== "object") return d;
+  const num = (v,def) => (typeof v === "number" && isFinite(v) && v >= 0) ? v : def;
+  return {
+    hours: num(o.hours, d.hours), daysPerMonth: num(o.daysPerMonth, d.daysPerMonth),
+    staff: num(o.staff, d.staff), rate: num(o.rate, d.rate),
+    lines: Array.isArray(o.lines) ? o.lines.filter(l=>l && l.id).map(l=>({id:String(l.id), name:String(l.name||""), amount:num(+l.amount,0)})) : d.lines,
+    contingency: num(o.contingency, d.contingency),
+    capital: num(o.capital, d.capital), paybackMonths: num(o.paybackMonths, d.paybackMonths)
+  };
+}
+function opexCalc(){
+  const o = settings.opex || (settings.opex = normalizeOpex(null));
+  const dpm = o.daysPerMonth > 0 ? o.daysPerMonth : 30;
+  const laborDay = o.staff * o.rate * o.hours;
+  const laborMonth = laborDay * dpm;
+  const other = o.lines.reduce((a,l)=>a+(+l.amount||0),0);
+  const core = laborMonth + other;
+  const cont = core * o.contingency / 100;
+  const month = core + cont;
+  const day = month / dpm;
+  // simple average across the costed items on the menu, the same way the sheet does it
+  const items = MENU.filter(it=>isOn(it) && !it.unpriced && !it.costPending).map(eff).filter(i=>i.price>0);
+  const avgGP = items.length ? items.reduce((a,i)=>a+i.price-i.cogs,0)/items.length : 0;
+  const avgPrice = items.length ? items.reduce((a,i)=>a+i.price,0)/items.length : 0;
+  const gm = avgPrice > 0 && avgGP > 0 ? avgGP/avgPrice : 0;
+  const payback = o.paybackMonths > 0 ? o.capital / o.paybackMonths : 0;
+  const up = v => Math.ceil(v - 1e-9);
+  return {
+    dpm, laborDay, laborMonth, other, core, cont, month, day, avgGP, avgPrice, gm, nItems:items.length, payback,
+    itemsDay:   avgGP > 0 ? up(month/avgGP/dpm) : 0,
+    itemsDayPB: avgGP > 0 ? up((month+payback)/avgGP/dpm) : 0,
+    beSales:    gm > 0 ? day/gm : 0,
+    beSalesPB:  gm > 0 ? (month+payback)/dpm/gm : 0
+  };
+}
+
+function renderBreakeven(){
+  const el = $("#besec"); if(!el) return;
+  const C = opexCalc();
+  const keys = rangeKeys();
+  const n = keys.length;
+  const S = stats(keys.flatMap(dayOrders));
+  const need = C.day * n;                                   // OPEX this range has to cover
+  const ratio = S.net > 0 && S.profit > 0 ? S.profit / S.net : C.gm;
+  const target = ratio > 0 ? need / ratio : 0;              // sales that would cover it at this margin
+  const pct = need > 0 ? Math.max(0, S.profit / need * 100) : 0;
+  const hit = need > 0 && S.profit >= need - EPS;
+  const isToday = range === "day" && (selDate || todayKey()) === todayKey();
+  const label = range === "day" ? (isToday ? "Today" : fmtMed(selDate)) : (n + " day" + (n===1?"":"s") + " in this range");
+  const marginNote = S.net > 0 && S.profit > 0 ? `at the ${(ratio*100).toFixed(0)}% margin you actually made` : `at the menu's ${(C.gm*100).toFixed(0)}% average margin`;
+  let state;
+  if(!n) state = `No days in this range yet.`;
+  else if(C.gm <= 0 && !(S.profit > 0)) state = `Set prices above cost under Menu &amp; costs to work out breakeven.`;
+  else if(hit) state = `<b class="state">Broke even.</b> Gross profit ${peso(S.profit)} covers the ${peso(need)} OPEX with ${peso(S.profit-need)} to spare.`;
+  else state = `<b class="state">${peso(Math.max(0,target - S.net))} more in sales</b> to break even, ${marginNote}. Gross profit so far covers ${pct.toFixed(0)}% of ${peso(need)} OPEX.`;
+
+  el.innerHTML = `
+    <div class="be">
+      <div>
+        <div class="k">OPEX per day</div>
+        <div class="v">${peso(C.day)}</div>
+        <div class="s">${pesoShort(C.month)} a month over ${C.dpm} days</div>
+      </div>
+      <div>
+        <div class="k">Breakeven sales</div>
+        <div class="v">${pesoShort(Math.ceil(C.beSales))}<small>/ day</small></div>
+        <div class="s">About <b>${C.itemsDay} items</b> at ${peso(C.avgGP)} profit each</div>
+      </div>
+      <div class="bp${hit?" hit":""}">
+        <div class="k">${esc(label)}</div>
+        <div class="v">${pesoShort(S.net)}<small>of ${pesoShort(Math.ceil(target))} to break even</small></div>
+        <div class="prog" role="progressbar" aria-label="Share of OPEX covered" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100,pct).toFixed(0)}"><i style="width:${Math.min(100,pct).toFixed(1)}%"></i></div>
+        <div class="s">${state}</div>
+      </div>
+    </div>
+    <p class="befoot">Labor ${peso(C.laborMonth)}, other costs ${peso(C.other)} and a ${+settings.opex.contingency}% contingency of ${peso(C.cont)} make ${peso(C.month)} a month. Breakeven uses the average across ${C.nItems} costed menu items.
+      To also pay back ${peso(settings.opex.capital)} of capital in ${+settings.opex.paybackMonths} month${+settings.opex.paybackMonths===1?"":"s"}: <b>${pesoShort(Math.ceil(C.beSalesPB))} a day, about ${C.itemsDayPB} items</b>.
+      <button class="linkbtn" data-gotoopex>Edit business expenses</button></p>`;
+}
+
+function opexNum(v, unit, key, step){
+  return `<input class="cell" type="number" min="0" step="${step||"any"}" inputmode="decimal" data-ox="${key}" value="${v}" aria-label="${esc(key)}"><span class="u">${unit||""}</span>`;
+}
+function renderOpex(){
+  const box = $("#opexsec"); if(!box) return;
+  const a = document.activeElement;
+  if(a && box.contains(a) && a.tagName === "INPUT"){ updateOpexCalc(); return; }   // don't redraw under the cursor
+  const o = settings.opex;
+  const lines = o.lines.map(l=>`
+    <tr>
+      <td><input type="text" class="namein" data-oname="${esc(l.id)}" value="${esc(l.name)}" maxlength="60" placeholder="Name this cost" aria-label="Cost name"><button class="linkbtn danger x" data-odel="${esc(l.id)}" aria-label="Remove ${esc(l.name||"this cost")}">Remove</button></td>
+      <td><input class="cell" type="number" min="0" step="any" inputmode="decimal" data-oamt="${esc(l.id)}" value="${+l.amount}" aria-label="${esc(l.name||"Cost")} per month"><span class="u">₱</span></td>
+      <td data-oc="line:${esc(l.id)}"></td>
+    </tr>`).join("");
+  box.innerHTML = `
+    <div class="opexgrid">
+      <div class="tablewrap"><table class="opextable">
+        <thead><tr><th>Monthly operating expenses</th><th>Input</th><th>Per month</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="3">Schedule and labor</td></tr>
+          <tr><td>Operating hours per day<small>10 AM to 8 PM on the sheet</small></td><td>${opexNum(o.hours,"hrs","hours")}</td><td></td></tr>
+          <tr><td>Days open per month<small>30 for planning; Monday to Sunday</small></td><td>${opexNum(o.daysPerMonth,"days","daysPerMonth","1")}</td><td></td></tr>
+          <tr><td>Number of staff</td><td>${opexNum(o.staff,"ppl","staff","1")}</td><td></td></tr>
+          <tr><td>Hourly rate</td><td>${opexNum(o.rate,"₱/hr","rate")}</td><td></td></tr>
+          <tr><td><b>Labor</b><small data-oc="laborday"></small></td><td></td><td data-oc="labormonth"></td></tr>
+          <tr class="grp"><td colspan="3">Monthly costs</td></tr>
+          ${lines}
+          <tr><td colspan="3"><button class="linkbtn" data-oadd>Add a cost</button></td></tr>
+          <tr class="grp"><td colspan="3">Buffer</td></tr>
+          <tr><td>Contingency<small>Repairs, spoilage, emergencies</small></td><td>${opexNum(o.contingency,"%","contingency")}</td><td data-oc="cont"></td></tr>
+        </tbody>
+        <tfoot>
+          <tr><td>Total monthly OPEX</td><td></td><td data-oc="month"></td></tr>
+          <tr class="hl"><td>OPEX per day</td><td></td><td data-oc="day"></td></tr>
+        </tfoot>
+      </table></div>
+      <div class="tablewrap"><table class="opextable">
+        <thead><tr><th>Breakeven</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Average gross profit per item<small data-oc="avgnote"></small></td><td data-oc="avggp"></td></tr>
+          <tr class="hl"><td>Breakeven sales per day</td><td data-oc="besales"></td></tr>
+          <tr><td>Items to sell per day</td><td data-oc="itemsday"></td></tr>
+          <tr><td>Items to sell per month</td><td data-oc="itemsmonth"></td></tr>
+          <tr class="grp"><td colspan="2">Capital payback</td></tr>
+          <tr><td>Total capital invested<small>Equipment, cart, tools</small></td><td>${opexNum(o.capital,"₱","capital")}</td></tr>
+          <tr><td>Target payback period</td><td>${opexNum(o.paybackMonths,"mos","paybackMonths")}</td></tr>
+          <tr><td>Payback needed per month</td><td data-oc="payback"></td></tr>
+          <tr><td>Sales per day, OPEX + payback</td><td data-oc="besalespb"></td></tr>
+          <tr><td>Items per day, OPEX + payback</td><td data-oc="itemspb"></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="opexfoot"><span>Saved with your settings, so every till sees the same plan.</span><button class="linkbtn" data-oreset>Reset to sheet values</button></div>`;
+  updateOpexCalc();
+}
+function updateOpexCalc(){
+  const box = $("#opexsec"); if(!box) return;
+  const C = opexCalc();
+  const set = (k, v) => { const e = box.querySelector(`[data-oc="${k}"]`); if(e) e.textContent = v; };
+  set("laborday", peso(C.laborDay) + " a day");
+  set("labormonth", peso(C.laborMonth));
+  settings.opex.lines.forEach(l => set("line:"+l.id, peso(+l.amount||0)));
+  set("cont", peso(C.cont));
+  set("month", peso(C.month));
+  set("day", peso(C.day));
+  set("avggp", peso(C.avgGP));
+  set("avgnote", `Across ${C.nItems} costed items on the menu, ${(C.gm*100).toFixed(0)}% margin`);
+  set("besales", peso(C.beSales));
+  set("itemsday", C.itemsDay + " items");
+  set("itemsmonth", (C.avgGP > 0 ? Math.ceil(C.month/C.avgGP - 1e-9) : 0) + " items");
+  set("payback", peso(C.payback));
+  set("besalespb", peso(C.beSalesPB));
+  set("itemspb", C.itemsDayPB + " items");
+  renderBreakeven();
+  renderBuffer();
+}
+function renderBuffer(){
+  const el = $("#bufferline"); if(!el) return;
+  const t = todayKey(); const keys = []; let k = t.slice(0,8)+"01";
+  while(k <= t){ keys.push(k); k = shiftKey(k,1); }
+  const C = opexCalc();
+  const logged = expTotal(keys);
+  const left = C.cont - logged;
+  const mo = dateOf(t).toLocaleDateString("en-PH",{month:"long"});
+  el.className = "bufferline" + (left < -EPS ? " over" : "");
+  el.innerHTML = !loadedAll && keys.length > 1
+    ? `Checking ${esc(mo)}'s logged expenses against the ${peso(C.cont)} contingency buffer…`
+    : left < -EPS
+      ? `<b>${peso(-left)} over</b> the ${peso(C.cont)} contingency buffer for ${esc(mo)}: ${peso(logged)} logged so far.`
+      : `${esc(mo)}: ${peso(logged)} logged against a ${peso(C.cont)} contingency buffer, <b>${peso(left)} left</b>.`;
+}
+
+let opexSaveT = null;
+function queueOpexSave(){ clearTimeout(opexSaveT); opexSaveT = setTimeout(persistSettings, 600); }
+$("#opexsec").addEventListener("input", e=>{
+  const t = e.target, o = settings.opex;
+  const v = Math.max(0, parseFloat(t.value) || 0);
+  if(t.dataset.ox){ o[t.dataset.ox] = v; }
+  else if(t.dataset.oamt){ const l = o.lines.find(x=>x.id===t.dataset.oamt); if(l) l.amount = v; }
+  else if(t.dataset.oname){ const l = o.lines.find(x=>x.id===t.dataset.oname); if(l) l.name = t.value.slice(0,60); queueOpexSave(); return; }
+  else return;
+  updateOpexCalc(); queueOpexSave();
+});
+$("#opexsec").addEventListener("change", ()=>{ clearTimeout(opexSaveT); persistSettings(); });
+$("#opexsec").addEventListener("click", e=>{
+  if(e.target.closest("[data-oadd]")){
+    const id = "c" + Date.now().toString(36);
+    settings.opex.lines.push({id, name:"", amount:0});
+    persistSettings(); renderOpex();
+    const inp = $(`#opexsec [data-oname="${id}"]`); if(inp) inp.focus();
+    return;
+  }
+  const d = e.target.closest("[data-odel]");
+  if(d){
+    const l = settings.opex.lines.find(x=>x.id===d.dataset.odel);
+    confirmDialog("Remove this cost?", (l && l.name ? l.name + ", " : "") + (l ? peso(+l.amount||0) + " a month. " : "") + "Daily OPEX and breakeven drop by its share.", "Remove", async ()=>{
+      settings.opex.lines = settings.opex.lines.filter(x=>x.id!==d.dataset.odel);
+      await persistSettings(); renderOpex(); toast("Cost removed");
+    });
+    return;
+  }
+  if(e.target.closest("[data-oreset]")){
+    confirmDialog("Reset business expenses?", "Every number in the monthly plan goes back to the OPEX & Breakeven sheet: ₱50/hr, 10 hours, 30 days, electricity ₱1,500, transportation ₱1,000, 10% contingency.", "Reset", async ()=>{
+      settings.opex = normalizeOpex(null);
+      await persistSettings(); renderOpex(); toast("Back to sheet values");
+    });
+  }
+});
+$("#besec").addEventListener("click", e=>{
+  if(!e.target.closest("[data-gotoopex]")) return;
+  $("#opex").scrollIntoView({block:"start", behavior:"smooth"});
+  setTimeout(()=>{ const f = $('#opexsec [data-ox="rate"]'); if(f) f.focus({preventScroll:true}); }, 450);
+});
+
+/* ============ menu manager ============ */
+function renderMenuTable(){
+  const rows = MENU.concat(ADDONS).map(raw=>{
+    const it = eff(raw);
+    const m = marginPct(it);
+    const cls = m < 15 ? "bad" : m < 30 ? "low" : "";
+    return `<tr>
+      <td>
+        <div style="font-weight:500">${esc(it.n)}${it.tag?` <span class="tag">${esc(it.tag)}</span>`:""}</div>
+        <div class="muted" style="font-size:12.5px">${esc(it.g)}${it.unpriced?" · price not on the printed menu":""}${it.costnote?" · "+esc(it.costnote):""}${it.g==="Add-ons"&&!it.cogs?" · enter your cost per serving":""}</div>
+      </td>
+      <td><input class="cell" type="number" min="0" step="1" data-price="${it.id}" value="${it.price}"></td>
+      <td><input class="cell" type="number" min="0" step="0.01" data-cogs="${it.id}" value="${it.cogs.toFixed(2)}"></td>
+      <td>${peso(it.price-it.cogs)}</td>
+      <td><span class="bar"><i class="${cls}" style="width:${Math.max(0,Math.min(100,m)).toFixed(0)}%"></i></span>${m.toFixed(0)}%</td>
+      <td><input type="checkbox" data-on="${it.id}" ${isOn(raw)?"checked":""} aria-label="Show ${esc(it.n)} on the order screen"></td>
+    </tr>`;
+  }).join("");
+  $("#menutable").innerHTML = `
+    <thead><tr><th>Item</th><th>Price</th><th>Cost</th><th>Profit</th><th>Margin</th><th>On menu</th></tr></thead>
+    <tbody>${rows}</tbody>`;
+
+  const risky = MENU.filter(isOn).map(eff).filter(i=>marginPct(i)<30)
+    .sort((a,b)=>marginPct(a)-marginPct(b));
+  $("#marginnote").innerHTML = risky.length
+    ? `<b>${risky.length} item${risky.length>1?"s sit":" sits"} under a 30% margin.</b> ` +
+      risky.map(i=>`${esc(i.n)} keeps ${marginPct(i).toFixed(0)}% (${peso(i.price-i.cogs)} a unit)`).join("; ") +
+      `. Matcha is the one to look at first — at ₱${eff(MENU.find(m=>m.id==="matcha")).cogs.toFixed(2)} loaded cost it earns less than a café latte does on a lower price.`
+    : `Every item on the menu clears a 30% margin at these prices.`;
+  if(settings.opex) renderBreakeven();
+}
+
+/* ============ modal ============ */
+function openModal(html){ $("#modal").innerHTML = html; $("#scrim").hidden = false; }
+function closeModal(){ $("#scrim").hidden = true; $("#modal").innerHTML = ""; }
+
+function askOptions(id){
+  const raw = MENU.find(i=>i.id===id); if(!raw) return;
+  const it = eff(raw);
+  const adds = addonsFor(raw);
+  let style = raw.style ? "Drink" : "";
+  const picked = new Set();
+  const total = () => it.price + adds.filter(a=>picked.has(a.id)).reduce((s,a)=>s+a.price,0);
+  openModal(`
+    <div class="modal-h"><h3>${esc(it.n)}</h3><p>${raw.style?"How do they want it made, and any add-ons?":"Any add-ons?"}</p></div>
+    <div class="modal-b">
+      ${raw.style?`<div class="optsec"><h4>Made as</h4><div class="optlist row" id="stylepick">
+        <button data-style="Drink" aria-pressed="true">Drink<small>Shaken, over ice</small></button>
+        <button data-style="Frappé" aria-pressed="false">Frappé<small>Blended with ice</small></button>
+      </div></div>`:""}
+      ${adds.length?`<div class="optsec"><h4>Add-ons <span>${pesoShort(adds[0].price)} each</span></h4><div class="addgrid" id="addpick">
+        ${adds.map(a=>`<button data-addon="${a.id}" aria-pressed="false">${esc(a.n)}<span class="ap">+${pesoShort(a.price)}</span></button>`).join("")}
+      </div></div>`:""}
+    </div>
+    <div class="modal-f">
+      <button class="btn ghost" id="cancelopt">Cancel</button>
+      <button class="btn" style="flex:1" id="addopt"></button>
+    </div>`);
+  const upd = () => { $("#addopt").textContent = "Add to order · " + peso(total()); };
+  upd();
+  $("#cancelopt").onclick = closeModal;
+  $("#modal").querySelectorAll("[data-style]").forEach(b=>{
+    b.onclick = ()=>{
+      style = b.dataset.style;
+      $("#modal").querySelectorAll("[data-style]").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+    };
+  });
+  $("#modal").querySelectorAll("[data-addon]").forEach(b=>{
+    b.onclick = ()=>{
+      const a = b.dataset.addon;
+      if(picked.has(a)) picked.delete(a); else picked.add(a);
+      b.setAttribute("aria-pressed", String(picked.has(a)));
+      upd();
+    };
+  });
+  $("#addopt").onclick = ()=>{
+    addToCart(id, style, adds.map(a=>a.id).filter(a=>picked.has(a)));
+    closeModal();
+  };
+}
+
+/* ============ events ============ */
+async function switchView(name){
+  curView = name;
+  document.querySelectorAll(".navtabs button").forEach(x=>x.setAttribute("aria-selected", String(x.dataset.view===name)));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id === "view-"+name));
+  if(name === "sales" || name === "orders"){ if(needsAll()) await loadAll(); renderAll(); }
+  if(name === "sales" && !loadedAll){ loadAll().then(()=>{ if(curView === "sales") renderBuffer(); }); }
+  if(name === "menu") renderMenuTable();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll(".navtabs button").forEach(b=>{ b.onclick = ()=>switchView(b.dataset.view); });
+
+$("#catbar").addEventListener("click", e=>{
+  const b = e.target.closest("[data-cat]"); if(!b) return;
+  activeCat = b.dataset.cat; renderCatBar(); renderCatalog();
+});
+
+$("#catalog").addEventListener("click", e=>{
+  const b = e.target.closest("[data-add]"); if(!b) return;
+  const raw = MENU.find(i=>i.id===b.dataset.add);
+  if(raw && (raw.style || addonsFor(raw).length)) askOptions(raw.id); else addToCart(b.dataset.add);
+});
+
+$("#lines").addEventListener("click", e=>{
+  const b = e.target.closest("[data-q]"); if(!b) return;
+  setQty(b.dataset.key, parseInt(b.dataset.q,10));
+});
+
+$("#pay").addEventListener("click", e=>{
+  const b = e.target.closest("[data-pay]"); if(!b) return;
+  if(b.dataset.pay !== payment) $("#payref").value = "";
+  payment = b.dataset.pay;
+  $("#pay").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+  renderCart();
+});
+
+$("#disc").onchange = ()=>{
+  $("#discamtwrap").style.display = $("#disc").value === "amount" ? "" : "none";
+  renderCart();
+};
+$("#discamt").oninput = renderCart;
+$("#tendered").oninput = renderCart;
+$("#chargebtn").onclick = charge;
+$("#clearbtn").onclick = ()=>{
+  if(!cart.length && !$("#custname").value) return;
+  cart = []; $("#tendered").value = ""; $("#payref").value = ""; $("#custname").value = "";
+  renderCart(); renderCatalog();
+};
+
+$("#cartopen").onclick = ()=> $("#rail").classList.add("open");
+$("#railclose").onclick = ()=> $("#rail").classList.remove("open");
+
+document.addEventListener("click", async e=>{
+  const r = e.target.closest(".rangesegs [data-range]");
+  if(r){
+    if(r.dataset.range === "today"){ range = "day"; selDate = todayKey(); }
+    else range = r.dataset.range;
+    if(needsAll()) await loadAll();
+    renderAll(); return;
+  }
+  const st = e.target.closest("[data-dstep]");
+  if(st){
+    if(st.dataset.dstep === "-1") showDay(shiftKey(range === "day" ? selDate : shiftKey(todayKey(),1), -1));
+    else if(range === "day" && selDate < todayKey()) showDay(shiftKey(selDate, 1));
+    return;
+  }
+  const g = e.target.closest("[data-goto]");
+  if(g){ switchView(g.dataset.goto); return; }
+  if(e.target.closest("[data-refresh]")){
+    loadedAll = false;
+    try{ days[todayKey()] = (await store.day(todayKey())) || days[todayKey()] || {date:todayKey(), orders:[]}; }catch(err){}
+    if(needsAll()) await loadAll();
+    renderAll(); toast("Up to date");
+  }
+});
+document.addEventListener("change", e=>{
+  if(e.target.classList && e.target.classList.contains("dayinput") && e.target.value) showDay(e.target.value);
+});
+function openDayFrom(e){
+  const el = e.target.closest("[data-day]"); if(!el) return;
+  showDay(el.dataset.day);
+  $("#view-sales").scrollIntoView({block:"start"}); window.scrollTo(0,0);
+}
+$("#daychart").addEventListener("click", openDayFrom);
+$("#daytable").addEventListener("click", openDayFrom);
+$("#paysec").addEventListener("click", e=>{
+  const sv = e.target.closest("[data-paysave]");
+  if(sv){
+    const vals = {};
+    document.querySelectorAll("#paytable .cntin").forEach(i=>{ vals[i.dataset.m] = i.value; });
+    if(Object.values(vals).some(v=>v !== "" && +v < 0)){ toast("Amounts can't be below zero"); return; }
+    saveCount(sv.dataset.paysave, vals); return;
+  }
+  const fl = e.target.closest("[data-payfill]");
+  if(fl){
+    const R = reconDay(fl.dataset.payfill);
+    document.querySelectorAll("#paytable .cntin").forEach(i=>{
+      const r = R.rows.find(x=>x.m.key === i.dataset.m);
+      if(r && i.value === "") i.value = r.exp.toFixed(2);
+    });
+    previewCount(fl.dataset.payfill); return;
+  }
+  const cl = e.target.closest("[data-payclear]");
+  if(cl){
+    const k = cl.dataset.payclear;
+    confirmDialog("Clear this day's count?", "The amounts you entered for "+fmtMed(k)+" are removed. Sales stay as they are.", "Clear count", ()=>saveCount(k, null));
+    return;
+  }
+  if(range !== "day") openDayFrom(e);
+});
+$("#paysec").addEventListener("input", e=>{
+  if(e.target.classList.contains("cntin")) previewCount(range === "day" ? (selDate || todayKey()) : null);
+});
+$("#paysec").addEventListener("keydown", e=>{
+  if(e.target.classList.contains("cntin") && e.key === "Enter"){ const b = $("[data-paysave]"); if(b) b.click(); return; }
+  if(range !== "day" && (e.key === "Enter" || e.key === " ") && e.target.closest("tr[data-day]")){ e.preventDefault(); openDayFrom(e); }
+});
+$("#daytable").addEventListener("keydown", e=>{ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openDayFrom(e); } });
+$("#orderlist").addEventListener("click", e=>{
+  const d = e.target.closest("[data-detail]");
+  if(d){ showOrderDetail(d.dataset.detail); return; }
+  const v = e.target.closest("[data-void]");
+  if(v){
+    confirmDialog("Void order "+v.dataset.void+"?", "It stays in the list but stops counting toward sales, cost and profit.", "Void order", ()=>voidOrder(v.dataset.void));
+    return;
+  }
+  const x = e.target.closest("[data-del]");
+  if(x){
+    confirmDialog("Delete order "+x.dataset.del+"?", "The order is removed from the history on every device and can't be brought back. Void it instead if you only want it to stop counting.", "Delete order", ()=>deleteOrder(x.dataset.del));
+    return;
+  }
+  const row = e.target.closest(".orderrow");
+  if(row){
+    const btn = row.querySelector("[data-detail]");
+    if(btn) showOrderDetail(btn.dataset.detail);
+  }
+});
+$("#ordersearch").oninput = ()=>renderOrders();
+$("#exportbtn").onclick = exportCSV;
+$("#exportdays").onclick = exportDaysCSV;
+
+$("#menutable").addEventListener("change", async e=>{
+  const t = e.target;
+  if(t.dataset.price !== undefined && t.dataset.price !== ""){
+    const v = parseFloat(t.value);
+    if(isNaN(v) || v < 0){ renderMenuTable(); return; }
+    (settings.overrides[t.dataset.price] = settings.overrides[t.dataset.price] || {}).price = v;
+  }else if(t.dataset.cogs !== undefined && t.dataset.cogs !== ""){
+    const v = parseFloat(t.value);
+    if(isNaN(v) || v < 0){ renderMenuTable(); return; }
+    (settings.overrides[t.dataset.cogs] = settings.overrides[t.dataset.cogs] || {}).cogs = v;
+  }else if(t.dataset.on !== undefined && t.dataset.on !== ""){
+    settings.enabled[t.dataset.on] = t.checked;
+  }else return;
+  await persistSettings();
+  renderMenuTable(); renderCatalog();
+});
+
+$("#resetmenu").onclick = ()=>{
+  confirmDialog("Reset prices and costs?", "Every item goes back to the numbers from your menu and cost sheets. Sales already recorded keep the amounts they were charged at.", "Reset", async ()=>{
+    settings = {overrides:{}, enabled:{}, opex:settings.opex, sheetRev:SHEET_REV};
+    await persistSettings();
+    renderMenuTable(); renderCatalog(); toast("Back to sheet values");
+  });
+};
+$("#wipe").onclick = ()=>{
+  confirmDialog("Erase all sales data?", "Every recorded order and expense is deleted for good. Prices and costs stay as they are.", "Erase", async ()=>{
+    try{ await store.wipe(); }catch(e){}
+    days = {}; days[todayKey()] = {date:todayKey(), orders:[]}; loadedAll = false;
+    renderAll(); toast("Sales data erased");
+  });
+};
+
+function confirmDialog(title, body, cta, fn){
+  openModal(`<div class="modal-h"><h3>${esc(title)}</h3><p>${esc(body)}</p></div>
+    <div class="modal-f"><button class="btn ghost" style="flex:1" id="cno">Cancel</button><button class="btn" id="cyes">${esc(cta)}</button></div>`);
+  $("#cno").onclick = closeModal;
+  $("#cyes").onclick = async ()=>{ closeModal(); await fn(); };
+}
+
+$("#scrim").addEventListener("click", e=>{ if(e.target === $("#scrim")) closeModal(); });
+document.addEventListener("keydown", e=>{ if(e.key === "Escape") closeModal(); });
+
+/* ============ go ============ */
+renderCatBar(); renderCatalog(); renderCart(); renderMenuTable(); syncRangeUI();
+initAuth();
+})();
+</script>
+</body>
+</html>
