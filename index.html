@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -130,10 +131,15 @@ const GROUPS = [
 const peso = n => "₱" + Math.round(n).toLocaleString("en-PH");
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-function render(overrides){
+function render(overrides, customItems){
+  const merged = MENU.concat((customItems||[]).map(ci=>({
+    id: ci.id, g: ci.g, n: ci.n, tag: ci.tag || null,
+    price: ci.price, kcal: ci.kcal, p: ci.p, c: ci.c, f: ci.f,
+    off: ci.enabled === false
+  })));
   const ov = overrides || {};
   const html = GROUPS.map(g=>{
-    const items = MENU.filter(it=>{
+    const items = merged.filter(it=>{
       if(it.g !== g.name) return false;
       const o = ov[it.id];
       const enabled = o && o.enabled !== null && o.enabled !== undefined ? o.enabled : !it.off;
@@ -163,18 +169,21 @@ function render(overrides){
 function $menu(){ return document.getElementById("menu"); }
 
 async function load(){
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let overrides = {}, customItems = [];
+  let hadError = false;
   try{
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const { data, error } = await sb.from("public_menu").select("*");
     if(error) throw error;
-    const overrides = {};
     (data||[]).forEach(row=>{ overrides[row.id] = { price: row.price, enabled: row.enabled }; });
-    render(overrides);
-  }catch(e){
-    console.error("menu load failed:", e);
-    document.getElementById("banner").style.display = "block";
-    render({}); // fall back to the standard printed menu rather than showing nothing
-  }
+  }catch(e){ console.error("menu overrides load failed:", e); hadError = true; }
+  try{
+    const { data, error } = await sb.from("custom_items_public").select("*");
+    if(error) throw error;
+    customItems = data || [];
+  }catch(e){ console.error("custom items load failed:", e); hadError = true; }
+  if(hadError) document.getElementById("banner").style.display = "block";
+  render(overrides, customItems); // falls back to the standard printed menu if both fetches failed
 }
 load();
 })();
